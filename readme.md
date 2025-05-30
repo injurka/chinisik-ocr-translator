@@ -19,13 +19,17 @@ Extension for capturing screen areas and translating text.
 ## Examples
 
 > Area selection
+
 ![image](https://github.com/user-attachments/assets/b97bc8b3-1eb0-4267-bb93-81c32489ef2b)
 
 > Translate result
+
 ![image](https://github.com/user-attachments/assets/3fabde54-45a3-4933-869a-bd60d2fb2f4d)
 
 > Different view mode
+
 ![image](https://github.com/user-attachments/assets/124ea62e-46bb-41b2-82bc-473cc44f0c3e)
 
 > Settings panel
+
 ![image](https://github.com/user-attachments/assets/22597720-3c0b-41a0-b50f-77216bda785c)
