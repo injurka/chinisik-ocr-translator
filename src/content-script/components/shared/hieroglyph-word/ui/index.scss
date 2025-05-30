@@ -1,0 +1,119 @@
+.variant-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  gap: 12px;
+  padding: 12px;
+  width: 100%;
+
+  .hw-glyph {
+    font-size: 1.3rem;
+  }
+}
+.variant-expanded {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0px;
+  width: 100%;
+  padding: 12px 0;
+  margin: 0 !important;
+
+  &.hw-none-pinyin,
+  &.hw-none-translate {
+    border: none;
+  }
+
+  .hw-pinyin {
+    text-align: center;
+    padding: 4px 12px;
+    font-size: 1rem;
+  }
+
+  .hw-glyph {
+    font-size: 1.3rem;
+    text-align: center;
+    border-radius: 0px;
+    border: none;
+    border-top: 1px solid var(--border-accent-color);
+    border-bottom: 1px solid var(--border-accent-color);
+    box-shadow: none;
+  }
+
+  .hw-translate {
+    text-align: center;
+    padding: 4px 12px;
+    line-height: 30px;
+    font-size: 1rem;
+  }
+}
+.variant-standard {
+  display: inline-flex;
+  padding: 12px;
+
+  .hw-glyph {
+    font-size: 2.1rem;
+    line-height: 64px;
+    border-radius: 10px;
+    min-width: 64px;
+    min-height: 64px;
+    text-align: center;
+    padding: 0 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  .hw-pinyin-translate {
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+
+    .hw-pinyin {
+      padding: 2px;
+      padding-bottom: 4px;
+    }
+    .hw-translate {
+      padding: 2px;
+      border-top: 2px dashed var(--border-secondary-color);
+      font-weight: 500;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      min-width: 0;
+    }
+  }
+}
+
+.hw-word {
+  font-size: 1rem;
+  margin: 4px 0;
+  margin-right: 8px;
+  display: inline-flex;
+}
+.hw-pinyin {
+  color: var(--fg-secondary-color);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+  font-family: var(--font-family-cn);
+  font-weight: 500;
+}
+.hw-glyph {
+  letter-spacing: 2px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 5px;
+  background: var(--bg-accent-color);
+  box-shadow: inset 0 0 2px var(--border-accent-color);
+  color: var(--fg-primary-color);
+  font-family: var(--font-family-cn);
+}
+.hw-translate {
+  color: var(--fg-primary-color);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+}

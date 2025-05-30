@@ -1,0 +1,53 @@
+{
+  "{{chrome}}.manifest_version": 3,
+  "{{firefox}}.manifest_version": 2,
+  "name": "Chinisik OCR Translator",
+  "version": "0.0.1",
+  "description": "Capture screen area and translate with AI",
+  "icons": {
+    "16": "icon/16.png",
+    "48": "icon/48.png",
+    "128": "icon/128.png"
+  },
+  "{{chrome}}.action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "{{firefox}}.browser_action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "background": {
+    "{{chrome}}.service_worker": "src/background/index.ts",
+    "{{firefox}}.scripts": [
+      "src/background/index.ts"
+    ],
+    "{{firefox}}.persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "src/content-script/main.ts"
+      ],
+      "css": [
+        "src/content-script/styles.css"
+      ]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "storage",
+    "{{firefox}}.<all_urls>",
+    "{{chrome}}.activeTab",
+    "{{firefox}}.activeTab"
+  ],
+  "commands": {
+    "capture-area": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "Start area capture"
+    }
+  }
+}
