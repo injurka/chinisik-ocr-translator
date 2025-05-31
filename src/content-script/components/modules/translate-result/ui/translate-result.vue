@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import type { TranslationResult as TranslationDataType } from '../../../../../shared/types'
 import type { ControlValues } from './sections/control-menu.vue'
+import type { LexicalAnalysisResult } from '~/shared/api/services/all/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import browser from 'webextension-polyfill'
 import { HieroglyphWord } from '../../../shared/hieroglyph-word'
 import ControlMenu from './sections/control-menu.vue'
+import LexicalAnalysisModal from './sections/lexical-analysis-modal.vue'
 
 interface Props {
   data: TranslationDataType
@@ -17,6 +20,15 @@ const controls = defineModel<ControlValues>('controls', {
   required: true,
 })
 const isControlMenuOpen = ref(false)
+const controlMenuRef = ref<HTMLElement | null>(null)
+const menuButtonRef = ref<HTMLElement | null>(null)
+
+// --- Состояние для лексического анализа ---
+const isLexicalAnalysisModalVisible = ref(false)
+const lexicalAnalysisData = ref<string | null>(null)
+const isLexicalAnalysisLoading = ref(false)
+const lexicalAnalysisError = ref<string | null>(null)
+// -----------------------------------------
 
 function closeComponent() {
   emit('close')
@@ -32,8 +44,31 @@ function toggleControlMenu() {
   isControlMenuOpen.value = !isControlMenuOpen.value
 }
 
-const controlMenuRef = ref<HTMLElement | null>(null)
-const menuButtonRef = ref<HTMLElement | null>(null)
+async function handleLexicalAnalysis() {
+  if (!props.data?.source || isLexicalAnalysisLoading.value)
+    return
+
+  isLexicalAnalysisLoading.value = true
+  lexicalAnalysisData.value = null
+  lexicalAnalysisError.value = null
+
+  try {
+    const response: { data: LexicalAnalysisResult } = await browser.runtime.sendMessage({
+      action: 'getLexicalAnalysis',
+      sentence: props.data.source,
+    })
+    lexicalAnalysisData.value = response?.data || null
+    isLexicalAnalysisModalVisible.value = true
+  }
+  catch (error: any) {
+    console.error('Ошибка при запросе лексического анализа:', error)
+    lexicalAnalysisError.value = error.message || 'Произошла неизвестная ошибка.'
+    isLexicalAnalysisModalVisible.value = true
+  }
+  finally {
+    isLexicalAnalysisLoading.value = false
+  }
+}
 
 function handleClickOutside(event: MouseEvent) {
   if (
@@ -86,6 +121,15 @@ const positionClasses = computed(() => {
   <div :class="positionClasses">
     <div class="actions-bar">
       <button
+        title="Лексический анализ"
+        class="icon-button lexical-analysis-btn"
+        :disabled="!props.data?.source || isLexicalAnalysisLoading"
+        @click="handleLexicalAnalysis"
+      >
+        <Icon v-if="isLexicalAnalysisLoading" icon="mdi:loading" class="animate-spin" />
+        <Icon v-else icon="mdi:text-box-search-outline" />
+      </button>
+      <button
         title="Озвучить распознанный текст"
         class="icon-button sound-btn"
         :disabled="!props.data?.source"
@@ -137,6 +181,13 @@ const positionClasses = computed(() => {
       </div>
     </div>
   </div>
+  <LexicalAnalysisModal
+    v-if="isLexicalAnalysisModalVisible"
+    :source="data.source"
+    :data="lexicalAnalysisData"
+    :is-loading="isLexicalAnalysisLoading"
+    @close="isLexicalAnalysisModalVisible = false; lexicalAnalysisError = null;"
+  />
 </template>
 
 <style lang="scss" scoped>
@@ -145,7 +196,6 @@ const positionClasses = computed(() => {
   bottom: 20px;
   min-width: 400px;
   width: auto;
-  max-width: calc(100vw - 40px);
   display: inline-flex;
   flex-direction: column;
   backdrop-filter: blur(10px);
@@ -154,6 +204,11 @@ const positionClasses = computed(() => {
   border-radius: 8px;
   z-index: 9999;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  max-width: calc(100vw - 40px);
+
+  @media (max-width: 1200px) {
+    width: 100%;
+  }
 
   &.position-center {
     left: 50%;
@@ -202,12 +257,12 @@ const positionClasses = computed(() => {
       box-shadow 0.2s;
 
     &:hover {
-      background-color: var(--bg-hover-color, #e0e0e0);
-      border-color: var(--border-accent-hover-color, #bbb);
+      background-color: var(--bg-action-hover-color, #828dca);
+      border-color: var(--border-accent-color, #bbcef8);
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.8;
       cursor: not-allowed;
       background-color: var(--bg-tertiary-color, #f0f0f0);
       color: var(--fg-disabled-color, #999);
@@ -219,10 +274,23 @@ const positionClasses = computed(() => {
       border-color: var(--border-accent-color, #007bff);
     }
 
+    .animate-spin {
+      animation: chinisik-spin 0.8s linear infinite;
+    }
+
     svg {
       width: 1em;
       height: 1em;
     }
+  }
+}
+
+@keyframes chinisik-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -236,7 +304,7 @@ const positionClasses = computed(() => {
   right: 0;
   z-index: 120;
   background-color: rgba(var(--bg-header-rgb, 245, 245, 245), 0.95);
-  border: 1px solid var(--border-secondary-color);
+  border-color: var(--border-primary-color, #22263b);
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

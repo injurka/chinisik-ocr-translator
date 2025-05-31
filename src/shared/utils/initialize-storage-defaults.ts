@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill'
-import { CHINISIK_DEFAULT_API_URL } from '../api/services/translation/providers/chinisik/config'
+import { CHINISIK_DEFAULT_API_URL } from '../api/services/all/providers/chinisik/config'
+import { STORAGE_KEY_CONTROLS } from '../constant'
 import { TranslationProvider } from '../types'
 
 export async function initializeStorageDefaults() {
@@ -20,15 +21,24 @@ export async function initializeStorageDefaults() {
       //   keepAlive: '5m',
       // },
     },
-    // ... другие глобальные настройки, если есть
+    appTheme: 'light',
+    [STORAGE_KEY_CONTROLS]: {
+      displayStyle: 'standard',
+      displayPosition: 'center',
+    },
   }
 
   const stored = await browser.storage.sync.get(Object.keys(defaults))
   const toSet: Partial<typeof defaults> = {}
 
-  if (stored.selectedProvider === undefined) {
+  if (stored.selectedProvider === undefined)
     toSet.selectedProvider = defaults.selectedProvider
-  }
+
+  if (stored.appTheme === undefined)
+    toSet.appTheme = defaults.appTheme
+
+  if (stored[STORAGE_KEY_CONTROLS] === undefined)
+    toSet[STORAGE_KEY_CONTROLS] = defaults[STORAGE_KEY_CONTROLS]
 
   const currentProviderSettings = (stored.providerSettings || {}) as typeof defaults.providerSettings
   let updateProviderSettings = false

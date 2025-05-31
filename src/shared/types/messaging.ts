@@ -25,11 +25,17 @@ export interface ShowErrorMessage extends BaseMessage {
   error: string
 }
 
+export interface GetLexicalAnalysisMessage extends BaseMessage {
+  action: 'getLexicalAnalysis'
+  sentence: string
+}
+
 export type RuntimeMessage =
   | CaptureAreaMessage
   | StartSelectionMessage
   | ShowTranslationMessage
   | ShowErrorMessage
+  | GetLexicalAnalysisMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 

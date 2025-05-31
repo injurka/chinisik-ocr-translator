@@ -1,9 +1,10 @@
-<!-- eslint-disable no-console -->
 <script setup lang="ts">
-import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from '../shared/api/services/translation/config' // Импортируйте все нужные конфиги
+import type { AllProviderConfigs, ChinisikConfig, GeminiConfig } from '../shared/api/services/all/config'
+import type { Theme } from '../shared/types'
+import { Icon } from '@iconify/vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import browser from 'webextension-polyfill'
-import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/translation/providers/chinisik/config'
+import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/all/providers/chinisik/config'
 import { TranslationProvider } from '../shared/types'
 
 interface ProviderField {
@@ -29,7 +30,7 @@ const providerDefinitions: ProviderUIDefinition[] = [
       { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Enter Chinisik API Key' },
       { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: CHINISIK_DEFAULT_API_URL, isOptional: true },
     ],
-    helpText: 'Default translation service. Requires an API key.',
+    helpText: '',
   },
   {
     id: TranslationProvider.Gemini,
@@ -59,10 +60,13 @@ const providerSettingsForm = reactive<AllProviderConfigs>({
   [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
   // [TranslationProvider.OLLAMA]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' },
 })
+const selectedTheme = ref<Theme>('light')
 const showKey = ref(false)
 const stats = reactive<{ today: number, total: number }>({ today: 0, total: 0 })
 const extensionVersion = ref(browser.runtime.getManifest().version)
 const isLoading = ref(true)
+
+const themes: Theme[] = ['light', 'dark', 'rainy']
 
 // --- Загрузка и сохранение настроек ---
 let debounceTimer: number
@@ -77,10 +81,7 @@ async function saveSettings() {
     await browser.storage.sync.set({
       selectedProvider: selectedProvider.value,
       providerSettings: JSON.parse(JSON.stringify(providerSettingsForm)),
-    })
-    console.log('Settings saved:', {
-      selectedProvider: selectedProvider.value,
-      providerSettings: providerSettingsForm,
+      appTheme: selectedTheme.value,
     })
   }
   catch (error) {
@@ -94,37 +95,33 @@ async function loadSettings() {
     const result = await browser.storage.sync.get([
       'selectedProvider',
       'providerSettings',
+      'appTheme',
     ]) as {
-      selectedProvider: TranslationProvider
-      providerSettings: BaseProviderConfig
+      selectedProvider?: TranslationProvider
+      providerSettings?: AllProviderConfigs
+      appTheme?: Theme
     }
 
-    const defaultSelected = TranslationProvider.Default
-    const defaultSettings: AllProviderConfigs = {
+    const defaultSelectedProvider = TranslationProvider.Default
+    const defaultProviderSettings: AllProviderConfigs = {
       [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
       [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
-      // [TranslationProvider.OLLAMA]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' },
+    }
+    const defaultTheme: Theme = 'light'
+
+    selectedProvider.value = result.selectedProvider || defaultSelectedProvider
+
+    const loadedProviderSettings = result.providerSettings || {}
+    for (const providerIdStr in defaultProviderSettings) {
+      const pId = providerIdStr as TranslationProvider
+      providerSettingsForm[pId] = {
+        ...defaultProviderSettings[pId],
+        ...(loadedProviderSettings[pId] || {}),
+      }
     }
 
-    selectedProvider.value = result.selectedProvider || defaultSelected
-
-    const storedProviderSettings = result.providerSettings || {}
-    const mergedSettings = {} as AllProviderConfigs
-
-    for (const providerId in defaultSettings) {
-      const pId = providerId as TranslationProvider
-      const defaultsForProvider = defaultSettings[pId]
-
-      // @ts-expect-error pId is a valid key for storedProviderSettings
-      const storedForProvider = storedProviderSettings[pId] || {}
-      mergedSettings[pId] = { ...defaultsForProvider, ...storedForProvider }
-    }
-    Object.assign(providerSettingsForm, mergedSettings)
-
-    console.log('Settings loaded:', {
-      selectedProvider: selectedProvider.value,
-      providerSettings: providerSettingsForm,
-    })
+    selectedTheme.value = themes.includes(result.appTheme!) ? result.appTheme! : defaultTheme
+    applyTheme(selectedTheme.value)
   }
   catch (error) {
     console.error('Error loading settings:', error)
@@ -134,7 +131,16 @@ async function loadSettings() {
   }
 }
 
-// Вычисляемое свойство для текущего выбранного UI определения провайдера
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme
+}
+
+function toggleTheme() {
+  const currentIndex = themes.indexOf(selectedTheme.value)
+  const nextIndex = (currentIndex + 1) % themes.length
+  selectedTheme.value = themes[nextIndex]
+}
+
 const currentProviderUI = computed(() => {
   return providerDefinitions.find(p => p.id === selectedProvider.value)
 })
@@ -143,8 +149,40 @@ const currentFormData = computed(() => {
   return providerSettingsForm[selectedProvider.value]
 })
 
+const currentThemeIcon = computed(() => {
+  switch (selectedTheme.value) {
+    case 'light': return 'ph:sun-bold'
+    case 'dark': return 'ph:moon-bold'
+    case 'rainy': return 'ph:cloud-rain-bold'
+    default: return 'ph:sun-bold'
+  }
+})
+
+const currentThemeTitle = computed(() => {
+  switch (selectedTheme.value) {
+    case 'light': return 'Светлая тема'
+    case 'dark': return 'Темная тема'
+    case 'rainy': return 'Тема "Дождь"'
+    default: return 'Светлая тема'
+  }
+})
+
 watch(selectedProvider, () => {
   saveSettings()
+})
+
+watch(selectedTheme, (newTheme) => {
+  applyTheme(newTheme)
+  saveSettings()
+})
+
+browser.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'sync' && changes.appTheme) {
+    const newTheme = changes.appTheme.newValue as Theme
+    if (newTheme && newTheme !== selectedTheme.value) {
+      selectedTheme.value = newTheme
+    }
+  }
 })
 
 onMounted(async () => {
@@ -155,7 +193,16 @@ onMounted(async () => {
 <template>
   <div class="popup">
     <div class="header">
-      <h2>🔍 Chinisik OCR Переводчик</h2>
+      <div class="title-block">
+        <h2>🔍 Chinisik OCR Переводчик</h2>
+        <button
+          class="theme-toggle-btn"
+          :title="`Сменить тему (текущая: ${currentThemeTitle})`"
+          @click="toggleTheme"
+        >
+          <Icon :icon="currentThemeIcon" />
+        </button>
+      </div>
     </div>
 
     <div v-if="isLoading" class="content loading-state">
@@ -246,12 +293,55 @@ onMounted(async () => {
   color: var(--bg-primary-color);
   padding: 16px;
   text-align: center;
+  border-bottom: 1px solid var(--border-primary-color);
 }
 .header h2 {
   margin: 0;
   font-size: 1.1em;
   font-weight: 600;
 }
+
+.title-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    flex-grow: 1;
+  }
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--chinisik-text-primary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  margin-left: 12px;
+
+  &:hover {
+    background-color: var(--chinisik-bg-hover);
+  }
+
+  &:focus,
+  &:active {
+    outline: none;
+  }
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
+}
+
 .content {
   padding: 16px;
 }
@@ -343,7 +433,7 @@ onMounted(async () => {
 .input-group input:focus,
 .settings-form input:focus {
   outline: none;
-  border-color: var(--fg-accent-color);
+  border-color: var(--border-secondary-color, #22263b1a);
   box-shadow: 0 0 0 2px var(--bg-accent-color);
 }
 .toggle-btn {

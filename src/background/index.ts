@@ -1,6 +1,6 @@
-import type { MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage } from '../shared/types/messaging'
+import type { GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage } from '../shared/types/messaging'
 import browser from 'webextension-polyfill'
-import { performTranslate } from '../shared/api'
+import { performLexicalAnalysisService, performTranslate } from '../shared/api'
 import { cropImage, isCaptureAreaMessage } from '../shared/utils/helpers'
 import { initializeStorageDefaults } from '../shared/utils/initialize-storage-defaults'
 
@@ -79,6 +79,24 @@ browser.runtime.onMessage.addListener(
         }
         browser.tabs.sendMessage(tabId, errorMsg)
         return { error: error.message || 'Unknown error' }
+      }
+    }
+    else if (request.action === 'getLexicalAnalysis') {
+      const getLexicalAnalysisMessage = request as GetLexicalAnalysisMessage
+
+      if (!getLexicalAnalysisMessage.sentence) {
+        console.error('Sentence is missing for lexical analysis.')
+        return { error: 'Sentence is missing for lexical analysis.' }
+      }
+      try {
+        const analysisResult = await performLexicalAnalysisService(getLexicalAnalysisMessage.sentence)
+
+        return { data: analysisResult }
+      }
+      catch (error: any) {
+        console.error('Error in background performing lexical analysis:', error)
+
+        return { error: error.message || 'Unknown error during lexical analysis.' }
       }
     }
     else {

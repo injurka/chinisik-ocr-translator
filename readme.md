@@ -30,10 +30,6 @@ Extension for capturing screen areas and translating text.
 
 ![image](https://github.com/user-attachments/assets/124ea62e-46bb-41b2-82bc-473cc44f0c3e)
 
-> Lexical analysis
-
-![image](https://github.com/user-attachments/assets/f5fd34a7-5b03-4974-8b28-b78eeeb7fd86)
-
 > Settings panel
 
 ![image](https://github.com/user-attachments/assets/22597720-3c0b-41a0-b50f-77216bda785c)

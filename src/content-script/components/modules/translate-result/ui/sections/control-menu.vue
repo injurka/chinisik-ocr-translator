@@ -93,6 +93,8 @@ function updateDisplayStyle(style: DisplayStyleValue) {
   flex-direction: column;
   gap: 16px;
   min-width: 220px;
+  background-color: var(--bg-secondary-color, #f7f7f7);
+  border: 1px solid var(--border-secondary-color, #22263b1a);
 }
 
 .control-group {
@@ -125,13 +127,13 @@ function updateDisplayStyle(style: DisplayStyleValue) {
     font-size: 18px;
 
     &:hover {
-      background-color: var(--bg-hover-color, #e0e0e0);
+      background-color: var(--bg-action-hover-color, #828dca);
     }
 
     &.active {
-      background-color: var(--border-accent-color, #007bff);
+      background-color: var(--border-accent-color, #bbcef8);
       color: var(--bg-primary-color, #fff);
-      border-color: var(--border-accent-color, #007bff);
+      border-color: var(--border-accent-color, #bbcef8);
     }
 
     svg {

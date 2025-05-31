@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-import type { AreaToCapture, RuntimeMessage, TranslationResult } from '../shared/types'
+import type { AreaToCapture, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
 import type { ControlValues } from './components/modules/translate-result/ui/sections/control-menu.vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import browser from 'webextension-polyfill'
+import { STORAGE_KEY_CONTROLS, STORAGE_KEY_THEME } from '~/shared/constant'
 import { Selection } from './components/modules/selection'
 import { TranslateLoading } from './components/modules/translate-loading'
 import { TranslateResult } from './components/modules/translate-result'
 
 type OverlayState = 'IDLE' | 'SELECTING' | 'LOADING' | 'RESULT' | 'ERROR'
-type Theme = 'light' | 'dark' | 'rainy'
 
-const STORAGE_KEY_CONTROLS = 'chinisikOcrTranslatorControls'
-
-const appTheme = ref<Theme>('light')
+const currentTheme = ref<Theme>('light')
 const currentState = ref<OverlayState>('IDLE')
 const isSelectionOverlayVisible = ref<boolean>(false)
 const translationData = ref<TranslationResult | null>(null)
@@ -30,8 +28,8 @@ async function loadControls() {
     if (result[STORAGE_KEY_CONTROLS]) {
       const loadedControls = result[STORAGE_KEY_CONTROLS] as ControlValues
       sharedControls.value = {
-        ...sharedControls.value, // Default values
-        ...loadedControls, // Loaded values override defaults
+        ...sharedControls.value,
+        ...loadedControls,
       }
     }
   }
@@ -108,35 +106,46 @@ function handleKeyDown(event: KeyboardEvent) {
     }
   }
 }
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme
+}
 
-async function loadTheme() {
+async function loadAndApplyTheme() {
   try {
-    const result = await browser.storage.sync.get('appTheme')
-    if (result.appTheme) {
-      appTheme.value = result.appTheme as Theme
-    }
+    const result = await browser.storage.sync.get(STORAGE_KEY_THEME)
+    const themeToApply = (result[STORAGE_KEY_THEME] as Theme) || 'light'
+    currentTheme.value = themeToApply
+    applyTheme(themeToApply)
   }
   catch (e) {
     console.error('Error loading theme:', e)
+    currentTheme.value = 'light'
+    applyTheme('light')
   }
 }
 
-async function initTheme() {
-  await loadTheme()
-
-  document.documentElement.classList.remove('light-mode', 'dark-mode', 'rainy-mode')
-  document.documentElement.classList.add(`${appTheme.value}-mode`)
-  document.documentElement.dataset.theme = appTheme.value
+function storageChangeListener(changes: Record<string, browser.Storage.StorageChange>, areaName: string) {
+  if (areaName === 'sync' && changes[STORAGE_KEY_THEME]) {
+    const newTheme = changes[STORAGE_KEY_THEME].newValue as Theme
+    if (newTheme && newTheme !== currentTheme.value) {
+      currentTheme.value = newTheme
+      applyTheme(newTheme)
+    }
+  }
 }
 
 onMounted(async () => {
-  await initTheme()
-  browser.runtime.onMessage.addListener(messageListener as any)
+  await loadAndApplyTheme()
   await loadControls()
+
+  browser.storage.onChanged.addListener(storageChangeListener)
+  browser.runtime.onMessage.addListener(messageListener as any)
+
   document.addEventListener('keydown', handleKeyDown)
 })
 
 onUnmounted(() => {
+  browser.storage.onChanged.removeListener(storageChangeListener)
   browser.runtime.onMessage.removeListener(messageListener as any)
   document.removeEventListener('keydown', handleKeyDown)
 })
