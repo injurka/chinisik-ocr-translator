@@ -25,18 +25,8 @@ watch(
 
 <style lang="scss">
 .markdown-body {
-  color: var(--fg-primary-color);
-  font-family:
-    'Rubik',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif,
-    'Apple Color Emoji',
-    'Segoe UI Emoji';
+  color: var(--fg-primary-color, #333);
+  font-family: var(--font-family-base);
   line-height: 1.5;
   font-size: 15px;
 
@@ -48,7 +38,7 @@ watch(
     margin-bottom: 12px;
     padding: 0.4rem;
     text-align: center;
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-secondary-color, #f7f7f7);
     border-bottom: 2px solid var(--border-accent-color);
     border-top: 2px solid var(--border-accent-color);
   }
@@ -75,91 +65,10 @@ watch(
     font-style: italic;
   }
 
-  ul,
-  ol {
-    margin-top: 0.4em;
-    margin-bottom: 1em;
-    padding-left: 1.5em;
-  }
-
-  li {
-    margin-bottom: 0.3em;
-
-    > p {
-      margin-bottom: 0;
-    }
-  }
-
-  ul {
-    list-style-type: disc;
-    ::marker {
-      color: var(--fg-secondary-color);
-    }
-  }
-
-  ol {
-    list-style-type: disc;
-
-    ::marker {
-      color: var(--bg-overlay-secondary-color);
-    }
-    > li {
-      color: var(--fg-secondary-color);
-      position: relative;
-      margin: 12px 0;
-
-      @include mobile {
-        margin: 4px 0;
-      }
-
-      ul {
-        padding-right: 0;
-      }
-
-      > ul {
-        &:first-of-type {
-          padding-top: 0px;
-          padding-bottom: 8px;
-        }
-      }
-
-      > p {
-        margin: 0;
-      }
-    }
-
-    &::before {
-      position: absolute;
-      content: '';
-      border-left: 1px solid var(--border-primary-color);
-      left: -12px;
-      top: 0;
-      margin-top: 30px;
-      height: calc(100% - 35px);
-      opacity: 0.5;
-    }
-  }
-
-  ol {
-    list-style-type: decimal;
-    ::marker {
-      color: var(--fg-secondary-color);
-    }
-  }
-
-  ul ul,
-  ol ul,
-  ul ol,
-  ol ol {
-    margin-top: 0.3em;
-    margin-bottom: 0.3em;
-    padding-left: 1.2em;
-  }
-
   code:not(pre > code) {
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    background-color: var(--bg-secondary-color);
-    color: var(--fg-primary-color);
+    font-family: var(--font-family-base);
+    background-color: var(--bg-secondary-color, #f7f7f7);
+    color: var(--fg-primary-color, #333);
     padding: 0.15em 0.3em;
     margin: 0 0.1em;
     font-size: 0.85em;
@@ -168,9 +77,9 @@ watch(
   }
 
   pre {
-    background: var(--bg-tertiary-color);
-    color: var(--fg-primary-color);
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    background: var(--bg-tertiary-color, #f3f3f3);
+    color: var(--fg-primary-color, #333);
+    font-family: var(--font-family-base);
     padding: 0.8em;
     margin-top: 1em;
     margin-bottom: 1em;
@@ -193,8 +102,8 @@ watch(
     border-left: 3px solid var(--border-accent-color);
     padding: 0.6em 1em;
     margin: 1em 0;
-    color: var(--fg-secondary-color);
-    background-color: var(--bg-secondary-color);
+    color: var(--fg-secondary-color, #495057);
+    background-color: var(--bg-secondary-color, #f7f7f7);
 
     p {
       margin-bottom: 0.4em;
@@ -204,7 +113,7 @@ watch(
     }
 
     ol {
-      color: var(--fg-secondary-color);
+      color: var(--fg-secondary-color, #495057);
       font-size: 0.9rem;
     }
   }
@@ -239,22 +148,22 @@ watch(
   }
 
   th {
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-secondary-color, #f7f7f7);
     font-weight: 600;
-    color: var(--fg-primary-color);
+    color: var(--fg-primary-color, #333);
   }
 
   details {
     margin: 1em 0;
     border: 1px solid var(--border-secondary-color);
     border-radius: 4px;
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-secondary-color, #f7f7f7);
 
     summary {
       font-weight: 600;
       cursor: pointer;
       padding: 0.6em 0.8em;
-      color: var(--fg-primary-color);
+      color: var(--fg-primary-color, #333);
       position: relative;
 
       &:focus-visible {
@@ -288,6 +197,95 @@ watch(
         margin: 0;
       }
     }
+  }
+
+  ul,
+  ol {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+
+    li {
+      line-height: 1.65;
+      margin-bottom: 0.4em;
+      position: relative;
+
+      p {
+        margin-top: 0.2em;
+        margin-bottom: 0.2em;
+        &:first-child {
+          margin-top: 0;
+        }
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      ul,
+      ol {
+        margin-top: 0.4em;
+        margin-bottom: 0.4em;
+      }
+    }
+  }
+
+  ul {
+    padding-left: 2em;
+    list-style: none;
+
+    li {
+      &::before {
+        content: '•';
+        color: var(--fg-accent-color, #007bff);
+        font-weight: bold;
+        position: absolute;
+        left: -1.2em;
+        top: 0.05em;
+        font-size: 1.1em;
+      }
+
+      ul {
+        li {
+          &::before {
+            content: '◦';
+            font-size: 1em;
+          }
+
+          ul {
+            li {
+              &::before {
+                content: '▪';
+                font-size: 0.9em;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ol {
+    padding-left: 0;
+
+    li {
+      padding-left: 0.3em;
+
+      &::marker {
+        color: var(--fg-accent-color, #007bff);
+        font-weight: 500;
+      }
+
+      ol {
+        list-style-type: lower-alpha;
+        ol {
+          list-style-type: lower-roman;
+        }
+      }
+    }
+  }
+
+  p + ul,
+  p + ol {
+    margin-top: 1em;
   }
 }
 </style>

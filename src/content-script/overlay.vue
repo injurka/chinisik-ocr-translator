@@ -207,9 +207,7 @@ onUnmounted(() => {
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    font-family:
-      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: var(--font-family-base);
     color: var(--fg-primary-color, #333);
     overflow: hidden;
   }
@@ -234,7 +232,7 @@ onUnmounted(() => {
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    color: var(--fg-secondary-color, #888);
+    color: var(--fg-secondary-color, #495057);
     padding: 0 5px;
     &:hover {
       color: var(--fg-primary-color, #333);

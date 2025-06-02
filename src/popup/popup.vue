@@ -284,16 +284,16 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .popup {
   width: 380px;
-  font-family: var(--font-family-base-default, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(--font-family-base);
   background-color: var(--bg-primary-color);
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
 }
 .header {
   background: linear-gradient(135deg, var(--fg-accent-color), var(--bg-accent-overlay-color));
   color: var(--bg-primary-color);
   padding: 16px;
   text-align: center;
-  border-bottom: 1px solid var(--border-primary-color);
+  border-bottom: 1px solid var(--border-primary-color, #22263b);
 }
 .header h2 {
   margin: 0;
@@ -348,7 +348,7 @@ onMounted(async () => {
 .loading-state {
   text-align: center;
   padding: 30px;
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
 }
 
 .tabs {
@@ -362,7 +362,7 @@ onMounted(async () => {
   border: none;
   background-color: transparent;
   font-size: 0.9em;
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition:
@@ -379,7 +379,7 @@ onMounted(async () => {
 }
 
 .settings-form {
-  background-color: var(--bg-secondary-color);
+  background-color: var(--bg-secondary-color, #f7f7f7);
   padding: 15px;
   border-radius: 6px;
   box-shadow: 0 1px 3px var(--bg-overlay-primary-color);
@@ -389,7 +389,7 @@ onMounted(async () => {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 1em;
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
 }
 
 .form-group {
@@ -400,7 +400,7 @@ onMounted(async () => {
   margin-bottom: 6px;
   font-weight: 500;
   font-size: 0.85em;
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
 }
 .input-group {
   display: flex;
@@ -414,9 +414,9 @@ onMounted(async () => {
   width: 100%;
   box-sizing: border-box;
   padding: 9px 11px;
-  border: 1px solid var(--border-primary-color);
+  border: 1px solid var(--border-primary-color, #22263b);
   background-color: var(--bg-primary-color);
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
   border-radius: 5px;
   font-size: 0.9em;
   transition:
@@ -438,9 +438,9 @@ onMounted(async () => {
 }
 .toggle-btn {
   padding: 9px 11px;
-  border: 1px solid var(--border-primary-color);
-  background: var(--bg-tertiary-color);
-  color: var(--fg-primary-color);
+  border: 1px solid var(--border-primary-color, #22263b);
+  background: var(--bg-tertiary-color, #f3f3f3);
+  color: var(--fg-primary-color, #333);
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9em;
@@ -448,11 +448,11 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 .toggle-btn:hover {
-  background: var(--bg-secondary-color);
+  background: var(--bg-secondary-color, #f7f7f7);
 }
 .help-text {
   font-size: 0.8em;
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
   margin-top: 6px;
 }
 .provider-help {
@@ -460,12 +460,12 @@ onMounted(async () => {
   padding: 8px 12px;
   border-radius: 4px;
   border-left: 3px solid var(--fg-accent-color);
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
   margin-top: 10px;
 }
 
 .instructions {
-  background-color: var(--bg-secondary-color);
+  background-color: var(--bg-secondary-color, #f7f7f7);
   padding: 15px;
   border-radius: 6px;
   box-shadow: 0 1px 3px var(--bg-overlay-primary-color);
@@ -476,7 +476,7 @@ onMounted(async () => {
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1em;
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
   border-bottom: 1px solid var(--border-secondary-color);
   padding-bottom: 5px;
 }
@@ -488,24 +488,16 @@ onMounted(async () => {
 }
 .instructions li {
   margin-bottom: 7px;
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
 }
 kbd {
-  background: var(--bg-tertiary-color);
-  border: 1px solid var(--border-primary-color);
+  background: var(--bg-tertiary-color, #f3f3f3);
+  border: 1px solid var(--border-primary-color, #22263b);
   border-radius: 3px;
   padding: 2px 5px;
   font-size: 0.85em;
-  font-family: var(
-    --font-family-base-default,
-    'SFMono-Regular',
-    Consolas,
-    'Liberation Mono',
-    Menlo,
-    Courier,
-    monospace
-  );
-  color: var(--fg-primary-color);
+  font-family: var(--font-family-base);
+  color: var(--fg-primary-color, #333);
 }
 .stats {
   border-top: 1px solid var(--border-secondary-color);
@@ -515,14 +507,14 @@ kbd {
 .stats p {
   margin: 6px 0;
   font-size: 0.85em;
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
 }
 .footer {
   padding: 12px 16px;
   text-align: right;
   font-size: 0.75em;
   color: var(--fg-tertiary-color);
-  border-top: 1px solid var(--border-primary-color);
-  background-color: var(--bg-tertiary-color);
+  border-top: 1px solid var(--border-primary-color, #22263b);
+  background-color: var(--bg-tertiary-color, #f3f3f3);
 }
 </style>

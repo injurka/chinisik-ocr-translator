@@ -106,7 +106,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
 .control-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--fg-secondary-color, #555);
+  color: var(--fg-secondary-color, #495057);
 }
 
 .button-group {
@@ -116,7 +116,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
   button {
     flex-grow: 1;
     padding: 6px 8px;
-    background-color: var(--bg-tertiary-color, #f0f0f0);
+    background-color: var(--bg-tertiary-color, #f3f3f3);
     border: 1px solid var(--border-secondary-color, #ccc);
     border-radius: 4px;
     cursor: pointer;

@@ -136,7 +136,7 @@ onUnmounted(() => {
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
-    color: var(--fg-secondary-color, #6c757d);
+    color: var(--fg-secondary-color, #495057);
     padding: 5px;
     display: flex;
     align-items: center;
@@ -164,7 +164,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     padding: 30px;
-    color: var(--fg-secondary-color);
+    color: var(--fg-secondary-color, #495057);
 
     .loader {
       border: 4px solid var(--bg-tertiary-color, #f3f3f3);

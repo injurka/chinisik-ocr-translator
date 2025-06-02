@@ -15,6 +15,21 @@
   "{{firefox}}.browser_action": {
     "default_popup": "src/popup/index.html"
   },
+  "{{chrome}}.web_accessible_resources": [
+    {
+      "resources": [
+        "assets/fonts/MapleMono-CN/*",
+        "assets/fonts/Rubik/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "{{firefox}}.web_accessible_resources": [
+    "assets/fonts/MapleMono-CN/*",
+    "assets/fonts/Rubik/*"
+  ],
   "background": {
     "{{chrome}}.service_worker": "src/background/index.ts",
     "{{firefox}}.scripts": [

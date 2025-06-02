@@ -240,7 +240,7 @@ const positionClasses = computed(() => {
   .icon-button {
     width: 32px;
     height: 32px;
-    background-color: var(--bg-tertiary-color, #f0f0f0);
+    background-color: var(--bg-tertiary-color, #f3f3f3);
     border: 1px solid var(--border-secondary-color, #ccc);
     border-radius: 50%;
     display: flex;
@@ -264,7 +264,7 @@ const positionClasses = computed(() => {
     &:disabled {
       opacity: 0.8;
       cursor: not-allowed;
-      background-color: var(--bg-tertiary-color, #f0f0f0);
+      background-color: var(--bg-tertiary-color, #f3f3f3);
       color: var(--fg-disabled-color, #999);
     }
 

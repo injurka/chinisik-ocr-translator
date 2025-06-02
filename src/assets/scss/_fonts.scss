@@ -1,0 +1,52 @@
+// Rubik Font Family
+@font-face {
+  font-family: 'Rubik';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/Rubik/Rubik-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/Rubik/Rubik-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/Rubik/Rubik-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+// MapleMono-CN Font Family for Chinese Characters
+@font-face {
+  font-family: 'MapleMono-CN';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/MapleMono-CN/MapleMono-CN-Regular.ttf') format('truetype');
+  font-weight: 400; // Regular
+  font-style: normal;
+  font-display: swap;
+ 
+}
+
+@font-face {
+  font-family: 'MapleMono-CN';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/MapleMono-CN/MapleMono-CN-Medium.ttf') format('truetype');
+  font-weight: 500; // Medium
+  font-style: normal;
+  font-display: swap;
+ 
+}
+
+@font-face {
+  font-family: 'MapleMono-CN';
+  src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/MapleMono-CN/MapleMono-CN-SemiBold.ttf') format('truetype');
+  font-weight: 600; // SemiBold
+  font-style: normal;
+  font-display: swap;
+ 
+}

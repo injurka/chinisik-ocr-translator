@@ -94,7 +94,7 @@
   display: inline-flex;
 }
 .hw-pinyin {
-  color: var(--fg-secondary-color);
+  color: var(--fg-secondary-color, #495057);
   font-weight: 400;
   font-size: 1rem;
   letter-spacing: 0.2px;
@@ -108,11 +108,11 @@
   border-radius: 5px;
   background: var(--bg-accent-color);
   box-shadow: inset 0 0 2px var(--border-accent-color);
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
   font-family: var(--font-family-cn);
 }
 .hw-translate {
-  color: var(--fg-primary-color);
+  color: var(--fg-primary-color, #333);
   font-weight: 400;
   font-size: 1rem;
   letter-spacing: 0.2px;

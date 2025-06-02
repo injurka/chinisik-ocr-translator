@@ -8,6 +8,7 @@
   }
 }
 
-@include mixins-theme.connectThemes(map.get(themes-theme.$font-family, 'cn'), 'cn') using ($theme, $themeName) {
-  --font-family-cn: #{$theme};
+:root {
+  --font-family-cn: 'MapleMono-CN';
+  --font-family-base: 'Rubik', Roboto, Helvetica, Arial, sans-serif, 'Segoe UI Emoji';
 }
