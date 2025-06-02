@@ -1,39 +1,41 @@
-# 🔍 Chinisik OCR Translator
+# 🔍 Chinisik OCR Переводчик
 
-Extension for capturing screen areas and translating text.
+Расширение для захвата областей экрана и перевода текста.
 
-## Features
+## Возможности
 
-- 📸 Screen area capture with visual selection
-- 🤖 AI-powered text recognition and translation
-- ⌨️ Keyboard shortcut support (Ctrl+Shift+S)
-- 🎯 Simple and intuitive interface
+- 📸 Захват области экрана с визуальным выделением
+- 🤖 Распознавание текста и перевод с помощью ИИ (искусственного интеллекта)
+- 🗣️ Озвучивание текста (Text-to-Speech)
+- 🧐 Получение лексического анализа предложения
+- ⌨️ Поддержка горячих клавиш (Ctrl+Shift+S)
+- 🎯 Простой и интуитивно понятный интерфейс
 
-## Usage
+## Использование
 
-1. Press `Ctrl+Shift+S` or click extension icon
-2. Click and drag to select screen area
-3. Click "Capture & Translate"
-4. View translation result
+1. Нажмите `Ctrl+Shift+S` или кликните по иконке расширения
+2. Кликните и перетащите мышь, чтобы выделить область экрана
+3. Нажмите «Захватить и перевести» (Capture & Translate)
+4. Просмотрите результат перевода
 
-## Examples
+## Примеры
 
-> Area selection
+> Выделение области
 
 ![image](https://github.com/user-attachments/assets/b97bc8b3-1eb0-4267-bb93-81c32489ef2b)
 
-> Translate result
+> Результат перевода
 
 ![image](https://github.com/user-attachments/assets/3fabde54-45a3-4933-869a-bd60d2fb2f4d)
 
-> Different view mode
+> Другой режим отображения
 
 ![image](https://github.com/user-attachments/assets/124ea62e-46bb-41b2-82bc-473cc44f0c3e)
 
-> Lexical analysis
+> Лексический анализ
 
 ![image](https://github.com/user-attachments/assets/f5fd34a7-5b03-4974-8b28-b78eeeb7fd86)
 
-> Settings panel
+> Панель настроек
 
 ![image](https://github.com/user-attachments/assets/22597720-3c0b-41a0-b50f-77216bda785c)
