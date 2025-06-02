@@ -203,6 +203,7 @@ watch(
   ol {
     margin-top: 0.75em;
     margin-bottom: 0.75em;
+    padding-left: 1.5em;
 
     li {
       line-height: 1.65;
@@ -229,7 +230,6 @@ watch(
   }
 
   ul {
-    padding-left: 2em;
     list-style: none;
 
     li {
@@ -264,8 +264,6 @@ watch(
   }
 
   ol {
-    padding-left: 0;
-
     li {
       padding-left: 0.3em;
 

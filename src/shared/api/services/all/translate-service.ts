@@ -1,6 +1,6 @@
 import type { TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './config'
-import type { LexicalAnalysisRequestParams, LexicalAnalysisResult, TranslateRequestParams } from './types'
+import type { LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
 import browser from 'webextension-polyfill'
 import { lexicalAnalysisPrompt } from '~/shared/constant'
 import { TranslationProvider } from '../../../types'
@@ -82,5 +82,62 @@ export async function performLexicalAnalysisService(sentence: string): Promise<L
       throw new TypeError(`Lexical analysis failed with ${currentProviderId}: ${error.message}`)
     }
     throw new Error(`An unknown error occurred during lexical analysis with ${currentProviderId}.`)
+  }
+}
+
+export async function performTextToSpeechService(text: string): Promise<Blob> {
+  const { selectedProvider } = await browser.storage.sync.get({
+    selectedProvider: TranslationProvider.Default,
+  })
+  const currentProviderId = selectedProvider as TranslationProvider
+  const providerConfig = await getProviderSettings(currentProviderId)
+  const providerInstance = getTranslationProvider(currentProviderId)
+
+  if (!providerInstance.textToSpeech) {
+    throw new Error(`Text-to-speech is not supported by the current provider: ${currentProviderId}.`)
+  }
+
+  const requestParams: TextToSpeechRequestParams = { text }
+
+  try {
+    const result = await providerInstance.textToSpeech(requestParams, providerConfig)
+    return result
+  }
+  catch (error) {
+    console.error(`Error during text-to-speech with ${currentProviderId}:`, error)
+    if (error instanceof Error) {
+      throw new TypeError(`Text-to-speech failed with ${currentProviderId}: ${error.message}`)
+    }
+    throw new Error(`An unknown error occurred during text-to-speech with ${currentProviderId}.`)
+  }
+}
+
+export async function performGenericLLMRawQuery(userPrompt: string, systemPrompt: string): Promise<LexicalAnalysisResult> {
+  const { selectedProvider } = await browser.storage.sync.get({
+    selectedProvider: TranslationProvider.Default,
+  })
+  const currentProviderId = selectedProvider as TranslationProvider
+  const providerConfig = await getProviderSettings(currentProviderId)
+  const providerInstance = getTranslationProvider(currentProviderId)
+
+  if (!providerInstance.analyzeLexically) {
+    throw new Error(`Generic LLM raw query (/llvm/raw) is not supported by the current provider's registered 'analyzeLexically' method: ${currentProviderId}.`)
+  }
+
+  const requestParams: LexicalAnalysisRequestParams = {
+    user: userPrompt,
+    system: systemPrompt,
+  }
+
+  try {
+    const result = await providerInstance.analyzeLexically(requestParams, providerConfig)
+    return result
+  }
+  catch (error) {
+    console.error(`Error during generic LLM raw query with ${currentProviderId}:`, error)
+    if (error instanceof Error) {
+      throw new TypeError(`Generic LLM raw query failed with ${currentProviderId}: ${error.message}`)
+    }
+    throw new Error(`An unknown error occurred during generic LLM raw query with ${currentProviderId}.`)
   }
 }

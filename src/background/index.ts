@@ -1,6 +1,6 @@
-import type { GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage } from '../shared/types/messaging'
+import type { GenericLlmRawQueryMessage, GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage, TextToSpeechMessage } from '../shared/types/messaging'
 import browser from 'webextension-polyfill'
-import { performLexicalAnalysisService, performTranslate } from '../shared/api'
+import { performGenericLLMRawQuery, performLexicalAnalysisService, performTextToSpeechService, performTranslate } from '../shared/api'
 import { cropImage, isCaptureAreaMessage } from '../shared/utils/helpers'
 import { initializeStorageDefaults } from '../shared/utils/initialize-storage-defaults'
 
@@ -97,6 +97,54 @@ browser.runtime.onMessage.addListener(
         console.error('Error in background performing lexical analysis:', error)
 
         return { error: error.message || 'Unknown error during lexical analysis.' }
+      }
+    }
+    else if (request.action === 'textToSpeech') {
+      const ttsMessage = request as TextToSpeechMessage
+      if (!ttsMessage.text) {
+        console.error('Text is missing for text-to-speech.')
+        return { error: 'Text is missing for text-to-speech.' }
+      }
+      try {
+        const audioBlob = await performTextToSpeechService(ttsMessage.text)
+
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              resolve(reader.result)
+            }
+            else {
+              reject(new Error('Failed to read blob as Data URL in background.'))
+            }
+          }
+          reader.onerror = (error) => {
+            console.error('FileReader error in background:', error)
+            reject(new Error('FileReader failed to read blob in background.'))
+          }
+          reader.readAsDataURL(audioBlob)
+        })
+
+        return { audioDataUrl: dataUrl }
+      }
+      catch (error: any) {
+        console.error('Error in background performing text-to-speech:', error)
+        return { error: error.message || 'Unknown error during text-to-speech.' }
+      }
+    }
+    else if (request.action === 'genericLlmRawQuery') {
+      const llmQueryMessage = request as GenericLlmRawQueryMessage
+      if (!llmQueryMessage.userPrompt || !llmQueryMessage.systemPrompt) {
+        console.error('User prompt or system prompt is missing for generic LLM query.')
+        return { error: 'User prompt or system prompt is missing.' }
+      }
+      try {
+        const result = await performGenericLLMRawQuery(llmQueryMessage.userPrompt, llmQueryMessage.systemPrompt)
+        return { data: result }
+      }
+      catch (error: any) {
+        console.error('Error in background performing generic LLM query:', error)
+        return { error: error.message || 'Unknown error during generic LLM query.' }
       }
     }
     else {

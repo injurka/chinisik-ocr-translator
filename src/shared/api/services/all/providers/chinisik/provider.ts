@@ -1,5 +1,5 @@
 import type { BaseProviderConfig, ChinisikConfig } from '../../config'
-import type { ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, TranslateRequestParams } from '../../types'
+import type { ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
 import { dataURLtoBlob } from '../../../../../utils/helpers'
@@ -67,7 +67,6 @@ export class ChinisikProvider implements ITranslationProvider {
     }
   }
 
-  // Новый метод для лексического анализа
   public async analyzeLexically(
     params: LexicalAnalysisRequestParams,
     baseConfig: BaseProviderConfig,
@@ -129,6 +128,84 @@ export class ChinisikProvider implements ITranslationProvider {
       }
       console.error('Unknown API error in ChinisikProvider (analyzeLexically):', error)
       throw new Error('Unknown error during Chinisik API lexical analysis request')
+    }
+  }
+
+  public async textToSpeech(
+    params: TextToSpeechRequestParams,
+    baseConfig: BaseProviderConfig,
+  ): Promise<TextToSpeechResult> {
+    const chinisikSpecificConfig: ChinisikConfig = {
+      apiKey: baseConfig.apiKey || '',
+      apiUrl: baseConfig.apiUrl || CHINISIK_DEFAULT_API_URL,
+    }
+
+    const { text, model = 'gpt-4o-mini-tts', voice = 'alloy', response_format = 'mp3', speed = 1 } = params
+    const { apiKey, apiUrl } = chinisikSpecificConfig
+
+    try {
+      const audioBlob = await $fetch<Blob>(`${apiUrl}/llvm/text-to-speech`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'audio/mp3',
+        },
+        body: {
+          text: text.replace(/\s+/g, ''),
+          model,
+          voice,
+          response_format,
+          speed,
+        },
+      })
+
+      if (!(audioBlob instanceof Blob)) {
+        console.error('TextToSpeech API did not return a Blob. Received:', audioBlob)
+        throw new Error('TextToSpeech API did not return a valid audio Blob.')
+      }
+      if (audioBlob.type !== 'audio/mpeg' && audioBlob.type !== 'audio/mp3') {
+        console.warn(`Expected audio/mpeg or audio/mp3 but received ${audioBlob.type}`)
+      }
+
+      return audioBlob
+    }
+    catch (error) {
+      if (error instanceof FetchError) {
+        const status = error.response?.status || 'Unknown'
+        const statusText = error.response?.statusText || 'Unknown Error'
+        let errorMessage = `Chinisik API text-to-speech error: ${status} ${statusText}`
+        const responseData = error.data || error.response?._data
+
+        if (responseData) {
+          try {
+            const errorJson = (typeof responseData === 'string' && (responseData.startsWith('{') || responseData.startsWith('['))) ? JSON.parse(responseData) : responseData
+            if (typeof errorJson === 'object' && errorJson !== null) {
+              if (errorJson.message)
+                errorMessage += ` - ${errorJson.message}`
+              else if (errorJson.detail)
+                errorMessage += ` - ${errorJson.detail}`
+              else if (errorJson.error)
+                errorMessage += ` - ${errorJson.error}`
+            }
+            else if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
+              errorMessage += ` - Response: ${responseData}`
+            }
+          }
+          catch (e) {
+            if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
+              errorMessage += ` - Response: ${responseData}`
+            }
+          }
+          console.error('Chinisik API TextToSpeech Error Full Response Data:', responseData)
+        }
+        throw new Error(errorMessage)
+      }
+      if (error instanceof Error) {
+        throw new TypeError(`ChinisikProvider textToSpeech failed: ${error.message}`)
+      }
+      console.error('Unknown API error in ChinisikProvider (textToSpeech):', error)
+      throw new Error('Unknown error during Chinisik API text-to-speech request')
     }
   }
 }

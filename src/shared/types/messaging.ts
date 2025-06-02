@@ -30,12 +30,25 @@ export interface GetLexicalAnalysisMessage extends BaseMessage {
   sentence: string
 }
 
+export interface TextToSpeechMessage extends BaseMessage {
+  action: 'textToSpeech'
+  text: string
+}
+
+export interface GenericLlmRawQueryMessage extends BaseMessage {
+  action: 'genericLlmRawQuery'
+  userPrompt: string
+  systemPrompt: string
+}
+
 export type RuntimeMessage =
   | CaptureAreaMessage
   | StartSelectionMessage
   | ShowTranslationMessage
   | ShowErrorMessage
   | GetLexicalAnalysisMessage
+  | TextToSpeechMessage
+  | GenericLlmRawQueryMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 

@@ -1,13 +1,16 @@
 <script lang="ts" setup>
-import type { TranslationResult as TranslationDataType } from '../../../../../shared/types'
+import type { GenericLlmRawQueryMessage, TranslationResult as TranslationDataType } from '../../../../../shared/types'
 import type { ControlValues } from './sections/control-menu.vue'
 import type { LexicalAnalysisResult } from '~/shared/api/services/all/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import browser from 'webextension-polyfill'
+import { questionPrompt } from '~/shared/constant'
+import { dataURLtoBlob } from '~/shared/utils/helpers'
 import { HieroglyphWord } from '../../../shared/hieroglyph-word'
 import ControlMenu from './sections/control-menu.vue'
 import LexicalAnalysisModal from './sections/lexical-analysis-modal.vue'
+import QuestionAnswerModal from './sections/question-answer-modal.vue'
 
 interface Props {
   data: TranslationDataType
@@ -30,13 +33,112 @@ const isLexicalAnalysisLoading = ref(false)
 const lexicalAnalysisError = ref<string | null>(null)
 // -----------------------------------------
 
+// --- Состояние для аудио ---
+const audioPlayer = ref<HTMLAudioElement | null>(null)
+const isSoundLoading = ref(false)
+const soundError = ref<string | null>(null)
+// -----------------------------------------
+
+// --- Состояние для вопросов и ответов ---
+const isQuestionAnswerModalVisible = ref(false)
+const questionAnswerData = ref<string | null>(null)
+const isQuestionAnswerLoading = ref(false)
+const questionAnswerError = ref<string | null>(null)
+// -----------------------------------------
+
 function closeComponent() {
   emit('close')
 }
 
-function soundSource() {
-  if (props.data?.source) {
-    emit('sound', props.data.source)
+// --- Функции для модального окна вопросов и ответов ---
+function openQuestionAnswerModal() {
+  questionAnswerData.value = null
+  questionAnswerError.value = null
+  isQuestionAnswerModalVisible.value = true
+}
+
+async function handleSubmitQuestion(question: string) {
+  if (!props.data?.source || !props.data?.translate || isQuestionAnswerLoading.value)
+    return
+
+  isQuestionAnswerLoading.value = true
+  questionAnswerData.value = null
+  questionAnswerError.value = null
+
+  try {
+    const message: GenericLlmRawQueryMessage = {
+      action: 'genericLlmRawQuery',
+      userPrompt: question,
+      systemPrompt: questionPrompt(props.data.source, props.data.translate),
+    }
+    const response: { data?: string, error?: string } = await browser.runtime.sendMessage(message)
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+    questionAnswerData.value = response.data || null
+  }
+  catch (error: any) {
+    console.error('Ошибка при запросе ответа на вопрос:', error)
+    questionAnswerError.value = error.message || 'Произошла неизвестная ошибка при обработке вопроса.'
+    questionAnswerData.value = null
+  }
+  finally {
+    isQuestionAnswerLoading.value = false
+  }
+}
+// ----------------------------------------------------
+
+async function soundSource() {
+  if (!props.data?.source || isSoundLoading.value) {
+    return
+  }
+  isSoundLoading.value = true
+  soundError.value = null
+  try {
+    const response: { audioDataUrl?: string, error?: string } | undefined = await browser.runtime.sendMessage({
+      action: 'textToSpeech',
+      text: props.data.source,
+    })
+
+    if (response && response.audioDataUrl) {
+      const audioDataUrl = response.audioDataUrl
+      const audioBlob = dataURLtoBlob(audioDataUrl)
+
+      if (audioPlayer.value) {
+        URL.revokeObjectURL(audioPlayer.value.src)
+      }
+      else {
+        audioPlayer.value = new Audio()
+      }
+      const objectUrl = URL.createObjectURL(audioBlob)
+
+      audioPlayer.value.src = objectUrl
+      audioPlayer.value.play()
+      audioPlayer.value.onended = () => {
+        URL.revokeObjectURL(objectUrl)
+      }
+      audioPlayer.value.onerror = (e) => {
+        console.error('Error playing audio:', e)
+        soundError.value = 'Ошибка воспроизведения аудио.'
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+    else if (response && typeof response === 'object' && 'error' in response) {
+      console.error('Text-to-speech API error:', response.error)
+      soundError.value = response.error || 'Ошибка синтеза речи.'
+    }
+    else {
+      console.error('Failed to retrieve audio or invalid format received.')
+      soundError.value = 'Не удалось получить аудиофайл.'
+    }
+  }
+  catch (error: any) {
+    console.error('Error fetching or playing sound:', error)
+    soundError.value = error.message || 'Произошла ошибка при запросе озвучивания.'
+  }
+  finally {
+    isSoundLoading.value = false
   }
 }
 
@@ -101,6 +203,14 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleEscapeKey)
+
+  if (audioPlayer.value) {
+    audioPlayer.value.pause()
+    if (audioPlayer.value.src && audioPlayer.value.src.startsWith('blob:')) {
+      URL.revokeObjectURL(audioPlayer.value.src)
+    }
+    audioPlayer.value = null
+  }
 })
 
 const positionClasses = computed(() => {
@@ -121,6 +231,16 @@ const positionClasses = computed(() => {
   <div :class="positionClasses">
     <div class="actions-bar">
       <button
+        title="Задать вопрос по тексту"
+        class="icon-button question-btn"
+        :disabled="!props.data?.source || !props.data?.translate || isQuestionAnswerLoading"
+        @click="openQuestionAnswerModal"
+      >
+        <Icon v-if="isQuestionAnswerLoading && !questionAnswerData" icon="mdi:loading" class="animate-spin" />
+        <Icon v-else icon="mdi:lightbulb-question-outline" />
+      </button>
+
+      <button
         title="Лексический анализ"
         class="icon-button lexical-analysis-btn"
         :disabled="!props.data?.source || isLexicalAnalysisLoading"
@@ -132,10 +252,11 @@ const positionClasses = computed(() => {
       <button
         title="Озвучить распознанный текст"
         class="icon-button sound-btn"
-        :disabled="!props.data?.source"
+        :disabled="!props.data?.source || isSoundLoading"
         @click="soundSource"
       >
-        <Icon icon="mdi:volume-high" />
+        <Icon v-if="isSoundLoading" icon="mdi:loading" class="animate-spin" />
+        <Icon v-else icon="mdi:volume-high" />
       </button>
       <div class="menu-container">
         <button
@@ -181,12 +302,21 @@ const positionClasses = computed(() => {
       </div>
     </div>
   </div>
+
   <LexicalAnalysisModal
     v-if="isLexicalAnalysisModalVisible"
     :source="data.source"
     :data="lexicalAnalysisData"
     :is-loading="isLexicalAnalysisLoading"
     @close="isLexicalAnalysisModalVisible = false; lexicalAnalysisError = null;"
+  />
+  <QuestionAnswerModal
+    v-if="isQuestionAnswerModalVisible"
+    :answer-data="questionAnswerData"
+    :is-loading="isQuestionAnswerLoading"
+    :error="questionAnswerError"
+    @close="isQuestionAnswerModalVisible = false; questionAnswerError = null; questionAnswerData = null;"
+    @submit-question="handleSubmitQuestion"
   />
 </template>
 
