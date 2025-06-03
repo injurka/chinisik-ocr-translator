@@ -1,3 +1,5 @@
+<!-- eslint-disable perfectionist/sort-imports -->
+
 <script lang="ts" setup>
 import type { AreaToCapture, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
 import type { ControlValues } from './components/modules/translate-result/ui/sections/control-menu.vue'

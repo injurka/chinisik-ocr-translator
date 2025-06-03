@@ -1,5 +1,6 @@
-import type { GenericLlmRawQueryMessage, GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage, TextToSpeechMessage } from '../shared/types/messaging'
+import type { GenericLlmRawQueryMessage, GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types/messaging'
 import browser from 'webextension-polyfill'
+import { translateExtendedPrompt, translateMinimalPrompt } from '~/shared/constant'
 import { performGenericLLMRawQuery, performLexicalAnalysisService, performTextToSpeechService, performTranslate } from '../shared/api'
 import { cropImage, isCaptureAreaMessage } from '../shared/utils/helpers'
 import { initializeStorageDefaults } from '../shared/utils/initialize-storage-defaults'
@@ -145,6 +146,25 @@ browser.runtime.onMessage.addListener(
       catch (error: any) {
         console.error('Error in background performing generic LLM query:', error)
         return { error: error.message || 'Unknown error during generic LLM query.' }
+      }
+    }
+    else if (request.action === 'translateInlineText') {
+      const msg = request as TranslateInlineTextMessage
+
+      if (!msg.text) {
+        console.error('Text is missing for inline translation.')
+
+        return { error: 'Text is missing for inline translation.' }
+      }
+      try {
+        const result = await performGenericLLMRawQuery(msg.text, translateMinimalPrompt())
+
+        return { data: result }
+      }
+      catch (error: any) {
+        console.error('Error in background performing inline translation:', error)
+
+        return { error: error.message || 'Unknown error during inline translation.' }
       }
     }
     else {

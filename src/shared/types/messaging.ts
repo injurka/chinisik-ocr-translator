@@ -41,6 +41,12 @@ export interface GenericLlmRawQueryMessage extends BaseMessage {
   systemPrompt: string
 }
 
+export interface TranslateInlineTextMessage extends BaseMessage {
+  action: 'translateInlineText'
+  text: string
+  systemPrompt?: string
+}
+
 export type RuntimeMessage =
   | CaptureAreaMessage
   | StartSelectionMessage
@@ -49,6 +55,7 @@ export type RuntimeMessage =
   | GetLexicalAnalysisMessage
   | TextToSpeechMessage
   | GenericLlmRawQueryMessage
+  | TranslateInlineTextMessage;
 
 export type MessageSender = browser.Runtime.MessageSender
 

@@ -34,7 +34,7 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         additionalData: `
-            @import '~/assets/scss/_setup.scss';
+          @import '~/assets/scss/_setup.scss';
         `,
         logger: {
           warn(message: any, options: any) {
