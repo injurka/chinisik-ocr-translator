@@ -109,7 +109,7 @@ const lexicalAnalysisPrompt = `
 - Обстоятельство времени ставится в начале предложения.
 `
 function questionPrompt(source: string, translate: string) {
-    return `
+  return `
 Вы — ИИ-ассистент. Пользователь получил перевод текста.
 Оригинальный текст: "${source}"
 Переведенный текст: "${translate}"
@@ -118,7 +118,7 @@ function questionPrompt(source: string, translate: string) {
 }
 
 function translateMinimalPrompt() {
-    return `
+  return `
     Вы полезный помощник переводчика. 
     Переведите следующий фрагмент китайского текста на русский. 
     Предоставьте только сам перевод, без каких-либо вводных фраз типа «Перевод:» или пояснений. 
@@ -127,7 +127,7 @@ function translateMinimalPrompt() {
 }
 
 function translateExtendedPrompt() {
-    return `
+  return `
     Вы эксперт по переводу китайского языка. 
     Переведите следующий китайский текст на русский, используя структурированный формат.
     Формат ответа:
@@ -151,8 +151,8 @@ function translateExtendedPrompt() {
 }
 
 export {
-    lexicalAnalysisPrompt,
-    questionPrompt,
-    translateExtendedPrompt,
-    translateMinimalPrompt,
+  lexicalAnalysisPrompt,
+  questionPrompt,
+  translateExtendedPrompt,
+  translateMinimalPrompt,
 }

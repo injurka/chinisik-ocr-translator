@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AllProviderConfigs, ChinisikConfig, GeminiConfig } from '../shared/api/services/all/config'
+import type { AllProviderConfigs, ChinisikConfig, GeminiConfig, OllamaConfig } from '../shared/api/services/all/config' // Добавлен OllamaConfig
 import type { Theme } from '../shared/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
@@ -8,7 +8,7 @@ import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/all/providers/c
 import { TranslationProvider } from '../shared/types'
 
 interface ProviderField {
-  key: keyof ChinisikConfig | keyof GeminiConfig
+  key: keyof ChinisikConfig | keyof GeminiConfig | keyof OllamaConfig // Добавлен keyof OllamaConfig
   label: string
   type: 'text' | 'password' | 'url'
   placeholder?: string
@@ -35,30 +35,33 @@ const providerDefinitions: ProviderUIDefinition[] = [
   {
     id: TranslationProvider.Gemini,
     name: 'Google Gemini',
-    fields: [
+    fields: [ // Эти поля будут скрыты, пока провайдер "в разработке"
       { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Enter Gemini API Key' },
       { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., gemini-pro-vision', isOptional: true },
     ],
     helpText: 'Uses Google\'s Gemini AI. Requires an API key.',
   },
-  // {
-  //   id: TranslationProvider.OLLAMA, // Когда будет Ollama
+  // { // Раскомментировано и добавлено определение для Ollama
+  //   id: TranslationProvider.OLLAMA,
   //   name: 'Ollama',
-  //   fields: [
+  //   fields: [ // Эти поля будут скрыты, пока провайдер "в разработке"
   //     { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: 'http://localhost:11434' },
   //     { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., llava' },
   //     { key: 'keepAlive', label: 'Keep Alive', type: 'text', placeholder: '5m', isOptional: true },
   //   ],
-  //   helpText: 'Uses a local Ollama instance. Configure API URL and model.'
+  //   helpText: 'Uses a local Ollama instance. Configure API URL and model.',
   // },
 ]
+
+// Список провайдеров, которые находятся в разработке
+const providersInDevelopment = [TranslationProvider.Gemini]
 
 // --- Реактивное состояние ---
 const selectedProvider = ref<TranslationProvider>(TranslationProvider.Default)
 const providerSettingsForm = reactive<AllProviderConfigs>({
   [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
   [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
-  // [TranslationProvider.OLLAMA]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' },
+  // [TranslationProvider.OLLAMA]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' }, // Добавлено для Ollama
 })
 const selectedTheme = ref<Theme>('light')
 const showKey = ref(false)
@@ -106,6 +109,7 @@ async function loadSettings() {
     const defaultProviderSettings: AllProviderConfigs = {
       [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
       [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
+      // [TranslationProvider.Ollama]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' }, // Добавлено для Ollama
     }
     const defaultTheme: Theme = 'light'
 
@@ -114,6 +118,10 @@ async function loadSettings() {
     const loadedProviderSettings = result.providerSettings || {}
     for (const providerIdStr in defaultProviderSettings) {
       const pId = providerIdStr as TranslationProvider
+      // Убедимся, что providerSettingsForm[pId] существует перед присвоением
+      if (!providerSettingsForm[pId]) {
+        providerSettingsForm[pId] = {} as any // Инициализация, если необходимо
+      }
       providerSettingsForm[pId] = {
         ...defaultProviderSettings[pId],
         ...(loadedProviderSettings[pId] || {}),
@@ -146,7 +154,11 @@ const currentProviderUI = computed(() => {
 })
 
 const currentFormData = computed(() => {
-  return providerSettingsForm[selectedProvider.value]
+  // Убедимся, что selectedProvider.value является ключом в providerSettingsForm
+  if (selectedProvider.value in providerSettingsForm) {
+    return providerSettingsForm[selectedProvider.value]
+  }
+  return undefined // Или вернуть объект по умолчанию/пустой объект
 })
 
 const currentThemeIcon = computed(() => {
@@ -222,7 +234,19 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div v-if="currentProviderUI && currentFormData" class="settings-form">
+      <!-- Блок для отображения "В разработке" -->
+      <div
+        v-if="providersInDevelopment.includes(selectedProvider)"
+        class="in-development-notice"
+      >
+        <p>⚙️ В разработке</p>
+      </div>
+
+      <!-- Форма настроек (отображается, если провайдер не в разработке) -->
+      <div
+        v-else-if="currentProviderUI && currentFormData"
+        class="settings-form"
+      >
         <h4>{{ currentProviderUI.name }}</h4>
         <div
           v-for="field in currentProviderUI.fields"
@@ -283,8 +307,9 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .popup {
+  min-height: 600px;
   width: 380px;
-  font-family: var(--font-family-base);
+  font-family: var(--chinisik-base-font-family);
   background-color: var(--bg-primary-color);
   color: var(--fg-primary-color, #333);
 }
@@ -376,6 +401,23 @@ onMounted(async () => {
   color: var(--fg-action-color);
   border-bottom-color: var(--fg-action-color);
   font-weight: 500;
+}
+
+/* Стили для плашки "В разработке" */
+.in-development-notice {
+  background-color: var(--bg-secondary-color, #f0f0f0);
+  padding: 25px 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px var(--bg-overlay-primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px dashed var(--border-secondary-color, #ccc);
+  color: var(--fg-secondary-color, #555);
+  p {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 500;
+  }
 }
 
 .settings-form {
@@ -496,7 +538,7 @@ kbd {
   border-radius: 3px;
   padding: 2px 5px;
   font-size: 0.85em;
-  font-family: var(--font-family-base);
+  font-family: var(--chinisik-base-font-family);
   color: var(--fg-primary-color, #333);
 }
 .stats {

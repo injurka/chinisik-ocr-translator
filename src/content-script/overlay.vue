@@ -209,7 +209,7 @@ onUnmounted(() => {
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    font-family: var(--font-family-base);
+    font-family: var(--chinisik-base-font-family);
     color: var(--fg-primary-color, #333);
     overflow: hidden;
   }
@@ -225,13 +225,13 @@ onUnmounted(() => {
 
   span {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .close-btn-header {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 1.25em;
     line-height: 1;
     cursor: pointer;
     color: var(--fg-secondary-color, #495057);
@@ -244,7 +244,7 @@ onUnmounted(() => {
 
 .chinisik-popup-content {
   padding: 15px;
-  font-size: 14px;
+  font-size: 0.875em;
   line-height: 1.5;
   flex-grow: 1;
 }

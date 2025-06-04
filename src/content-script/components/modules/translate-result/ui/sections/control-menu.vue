@@ -104,7 +104,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
 }
 
 .control-label {
-  font-size: 0.85rem;
+  font-size: 0.85em;
   font-weight: 500;
   color: var(--fg-secondary-color, #495057);
 }
@@ -124,7 +124,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
     align-items: center;
     justify-content: center;
     color: var(--fg-primary-color, #333);
-    font-size: 18px;
+    font-size: 1.125em;
 
     &:hover {
       background-color: var(--bg-action-hover-color, #828dca);
@@ -147,7 +147,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 
   label {
     color: var(--fg-primary-color, #333);

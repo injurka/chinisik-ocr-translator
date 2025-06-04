@@ -30,8 +30,6 @@ export function useInlineTranslation(options: UseInlineTranslationOptions) {
   }
 
   async function handleTranslateRequest() {
-    console.log('handleTranslateRequest')
-
     if (!currentSelectedText.value || isLoading.value)
       return
 

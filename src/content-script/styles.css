@@ -1,1 +1,7 @@
 @import '../assets/scss/main.scss';
+
+#chinisik-ocr-translator-overlay-root {
+  font-size: var(--chinisik-base-font-size, 16px);
+  font-family: var(--chinisik-base-font-family);
+  color: var(--fg-primary-color);
+}

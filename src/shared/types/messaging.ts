@@ -55,7 +55,7 @@ export type RuntimeMessage =
   | GetLexicalAnalysisMessage
   | TextToSpeechMessage
   | GenericLlmRawQueryMessage
-  | TranslateInlineTextMessage;
+  | TranslateInlineTextMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 

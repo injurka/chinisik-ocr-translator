@@ -10,6 +10,7 @@ interface AreaToCapture {
 enum TranslationProvider {
   Default = 'chinisik',
   Gemini = 'gemini',
+  // Ollama = 'ollama',
 }
 
 interface TranslationResult {

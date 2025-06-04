@@ -26,17 +26,17 @@ watch(
 <style lang="scss">
 .markdown-body {
   color: var(--fg-primary-color, #333);
-  font-family: var(--font-family-base);
+  font-family: var(--chinisik-base-font-family);
   line-height: 1.5;
-  font-size: 15px;
+  font-size: 0.9375em;
 
   h2 {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     border-bottom: 2px solid var(--border-secondary-color);
-    margin-top: 0rem;
+    margin-top: 0em;
     font-weight: 500;
     margin-bottom: 12px;
-    padding: 0.4rem;
+    padding: 0.4em;
     text-align: center;
     background-color: var(--bg-secondary-color, #f7f7f7);
     border-bottom: 2px solid var(--border-accent-color);
@@ -66,7 +66,7 @@ watch(
   }
 
   code:not(pre > code) {
-    font-family: var(--font-family-base);
+    font-family: var(--chinisik-base-font-family);
     background-color: var(--bg-secondary-color, #f7f7f7);
     color: var(--fg-primary-color, #333);
     padding: 0.15em 0.3em;
@@ -79,7 +79,7 @@ watch(
   pre {
     background: var(--bg-tertiary-color, #f3f3f3);
     color: var(--fg-primary-color, #333);
-    font-family: var(--font-family-base);
+    font-family: var(--chinisik-base-font-family);
     padding: 0.8em;
     margin-top: 1em;
     margin-bottom: 1em;
@@ -114,7 +114,7 @@ watch(
 
     ol {
       color: var(--fg-secondary-color, #495057);
-      font-size: 0.9rem;
+      font-size: 0.9em;
     }
   }
 

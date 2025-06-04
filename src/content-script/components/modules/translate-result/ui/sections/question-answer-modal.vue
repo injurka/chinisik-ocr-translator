@@ -153,7 +153,7 @@ onUnmounted(() => {
 
   h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 500;
     color: var(--fg-primary-color, #212529);
   }
@@ -161,7 +161,7 @@ onUnmounted(() => {
   .close-btn-header {
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: 1.375em;
     line-height: 1;
     cursor: pointer;
     color: var(--fg-secondary-color, #495057);
@@ -184,7 +184,7 @@ onUnmounted(() => {
 .chinisik-modal-body {
   overflow-y: auto;
   flex-grow: 1;
-  font-size: 0.95rem;
+  font-size: 0.95em;
 
   .question-input-area {
     display: flex;
@@ -198,7 +198,7 @@ onUnmounted(() => {
       border-radius: 6px;
       border: 1px solid var(--border-secondary-color, #ced4da);
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.95em;
       resize: vertical;
       min-height: 70px;
       background-color: var(--bg-primary-color, #fff);
@@ -223,7 +223,7 @@ onUnmounted(() => {
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.9em;
       font-weight: 500;
       display: flex;
       align-items: center;

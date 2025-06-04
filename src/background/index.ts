@@ -1,6 +1,6 @@
 import type { GenericLlmRawQueryMessage, GetLexicalAnalysisMessage, MessageSender, RuntimeMessage, ShowErrorMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types/messaging'
 import browser from 'webextension-polyfill'
-import { translateExtendedPrompt, translateMinimalPrompt } from '~/shared/constant'
+import { translateMinimalPrompt } from '~/shared/constant'
 import { performGenericLLMRawQuery, performLexicalAnalysisService, performTextToSpeechService, performTranslate } from '../shared/api'
 import { cropImage, isCaptureAreaMessage } from '../shared/utils/helpers'
 import { initializeStorageDefaults } from '../shared/utils/initialize-storage-defaults'

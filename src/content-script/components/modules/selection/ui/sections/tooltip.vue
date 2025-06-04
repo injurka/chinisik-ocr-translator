@@ -20,7 +20,7 @@ defineProps<{
   color: white;
   padding: 3px 7px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: 0.75em;
   pointer-events: none;
   white-space: nowrap;
   z-index: 2147483647;

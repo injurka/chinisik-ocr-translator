@@ -77,8 +77,8 @@ const positionClasses = computed(() => {
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-  font-family: var(--font-family-base);
-  color: var(--fg-primary-color, #333);
+    font-family: var(--chinisik-base-font-family);
+    color: var(--fg-primary-color, #333);
     overflow: hidden;
   }
 }
@@ -93,13 +93,13 @@ const positionClasses = computed(() => {
 
   span {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875em;
   }
 
   .close-btn-header {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 1.125em;
     line-height: 1;
     cursor: pointer;
     color: var(--fg-secondary-color, #495057);

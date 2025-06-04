@@ -79,7 +79,7 @@ function getTone(index: number) {
     line-height: 100%;
     width: 100%;
     font-weight: 600;
-    font-family: var(--font-family-cn);
+    font-family: var(--chinisik-font-family-cn);
     font-size: inherit;
   }
 }

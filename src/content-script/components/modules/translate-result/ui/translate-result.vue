@@ -377,7 +377,7 @@ const positionClasses = computed(() => {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 1.125em;
     line-height: 1;
     color: var(--fg-primary-color, #333);
     transition:

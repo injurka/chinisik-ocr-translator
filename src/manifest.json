@@ -51,12 +51,19 @@
     }
   ],
   "permissions": [
+    "{{firefox}}.<all_urls>",
     "tabs",
     "storage",
-    "{{firefox}}.<all_urls>",
+    "notifications",
     "{{chrome}}.activeTab",
     "{{firefox}}.activeTab"
   ],
+  "{{firefox}}.browser_specific_settings": {
+    "gecko": {
+      "id": "chinisik-ocr-translator@chinisik.ru",
+      "strict_min_version": "91.1.0"
+    }
+  },
   "commands": {
     "capture-area": {
       "suggested_key": {

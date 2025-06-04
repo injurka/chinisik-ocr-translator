@@ -1,4 +1,5 @@
 import path from 'node:path'
+import process from 'node:process'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
@@ -8,9 +9,11 @@ function root(...paths: string[]): string {
   return path.resolve(__dirname, ...paths)
 }
 
+const targetBrowser = process.env.TARGET || 'chrome'
+
 export default defineConfig({
   build: {
-    outDir: root('dist'),
+    outDir: root(`dist/${targetBrowser}`),
     emptyOutDir: true,
   },
   plugins: [
@@ -19,9 +22,10 @@ export default defineConfig({
       optimize: true,
       enableObjectSlots: true,
     }),
+    // @ts-expect-error dts
     browserExtension({
       manifest: 'src/manifest.json',
-      browser: 'chrome',
+      browser: targetBrowser,
       watchFilePaths: ['src/**/*'],
     }),
   ],
@@ -38,7 +42,6 @@ export default defineConfig({
         `,
         logger: {
           warn(message: any, options: any) {
-            // eslint-disable-next-line node/prefer-global/process
             const { stderr } = process
             const span = options.span ?? undefined
             const stack = (options.stack === 'null' ? undefined : options.stack) ?? undefined

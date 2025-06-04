@@ -125,7 +125,7 @@ onUnmounted(() => {
 
   h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 400;
     color: var(--fg-primary-color, #212529);
   }
@@ -133,7 +133,7 @@ onUnmounted(() => {
   .close-btn-header {
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: 1.375em;
     line-height: 1;
     cursor: pointer;
     color: var(--fg-secondary-color, #495057);
@@ -156,7 +156,7 @@ onUnmounted(() => {
 .chinisik-modal-body {
   overflow-y: auto;
   flex-grow: 1;
-  font-size: 0.95rem;
+  font-size: 0.95em;
 
   .loader-container {
     display: flex;

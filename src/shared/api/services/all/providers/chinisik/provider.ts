@@ -192,7 +192,7 @@ export class ChinisikProvider implements ITranslationProvider {
               errorMessage += ` - Response: ${responseData}`
             }
           }
-          catch (e) {
+          catch {
             if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
               errorMessage += ` - Response: ${responseData}`
             }

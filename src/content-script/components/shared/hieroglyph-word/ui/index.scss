@@ -8,7 +8,7 @@
   width: 100%;
 
   .hw-glyph {
-    font-size: 1.3rem;
+    font-size: 1.3em;
   }
 }
 .variant-expanded {
@@ -27,11 +27,11 @@
   .hw-pinyin {
     text-align: center;
     padding: 4px 12px;
-    font-size: 1rem;
+    font-size: 1em;
   }
 
   .hw-glyph {
-    font-size: 1.3rem;
+    font-size: 1.3em;
     text-align: center;
     border-radius: 0px;
     border: none;
@@ -44,7 +44,7 @@
     text-align: center;
     padding: 4px 12px;
     line-height: 30px;
-    font-size: 0.95rem;
+    font-size: 0.95em;
   }
 }
 .variant-standard {
@@ -52,7 +52,7 @@
   padding: 12px;
 
   .hw-glyph {
-    font-size: 2.1rem;
+    font-size: 2.1em;
     line-height: 64px;
     border-radius: 10px;
     min-width: 64px;
@@ -89,7 +89,7 @@
 
 .hw-word {
   position: relative;
-  font-size: 1rem;
+  font-size: 1em;
   margin: 4px 0;
   margin-right: 8px;
   display: inline-flex;
@@ -97,9 +97,9 @@
 .hw-pinyin {
   color: var(--fg-secondary-color, #495057);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1em;
   letter-spacing: 0.2px;
-  font-family: var(--font-family-cn);
+  font-family: var(--chinisik-font-family-cn);
   font-weight: 500;
 }
 .hw-glyph {
@@ -110,12 +110,12 @@
   background: var(--bg-accent-color);
   box-shadow: inset 0 0 2px var(--border-accent-color);
   color: var(--fg-primary-color, #333);
-  font-family: var(--font-family-cn);
+  font-family: var(--chinisik-font-family-cn);
 }
 .hw-translate {
   color: var(--fg-primary-color, #333);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1em;
   letter-spacing: 0.2px;
 }
 .hw-glyph-selectable {
@@ -125,14 +125,14 @@
 
 .chinisik-translated-word-wrapper {
   position: relative;
-  display: inline-block; 
-  // background-color: var(--bg-accent-subtle-color, #e0e8ff); 
+  display: inline-block;
+  // background-color: var(--bg-accent-subtle-color, #e0e8ff);
   border-radius: 2px;
 }
 
 .chinisik-translation-popup {
   position: absolute;
-  bottom: 110%; 
+  bottom: 110%;
   left: 50%;
   transform: translateX(-50%);
   background-color: var(--bg-primary-color, #ffffff);
@@ -142,7 +142,7 @@
   padding: 4px 8px;
   font-size: 0.9em;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  z-index: 2147483647; 
+  z-index: 2147483647;
   white-space: nowrap;
 
   button {
