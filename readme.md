@@ -40,6 +40,10 @@
 
 ![image](https://github.com/user-attachments/assets/f5fd34a7-5b03-4974-8b28-b78eeeb7fd86)
 
+> Точечный перевод слов
+
+![image](https://github.com/user-attachments/assets/962f6d0b-83bc-438a-8a07-a605a3bbd695)
+
 > Панель настроек
 
 ![image](https://github.com/user-attachments/assets/22597720-3c0b-41a0-b50f-77216bda785c)
