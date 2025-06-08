@@ -1,5 +1,5 @@
 import type { BaseProviderConfig } from './config'
-import type { TranslationResult } from '~/shared/types'
+import type { BoundingBox, TranslationResult } from '~/shared/types'
 
 export interface LexicalAnalysisRequestParams {
   user: string
@@ -21,6 +21,15 @@ export interface TextToSpeechRequestParams {
   speed?: number
 }
 
+export type FullscreenTranslateResult = {
+  result: TranslationResult
+  bbox: BoundingBox
+}[]
+export interface FullscreenTranslateParams {
+  imageDataUrl: string
+  systemPrompt?: string
+}
+
 export interface ITranslationProvider {
   /**
    * Переводит изображение.
@@ -39,4 +48,12 @@ export interface ITranslationProvider {
   textToSpeech?: (params: TextToSpeechRequestParams, config: BaseProviderConfig) => Promise<TextToSpeechResult>
 
   analyzeLexically: (params: LexicalAnalysisRequestParams, config: BaseProviderConfig) => Promise<LexicalAnalysisResult>
+
+  /**
+   * Optional: Performs OCR and translation for the entire image, returning multiple text blocks.
+   * @param params Parameters for the fullscreen translation request, including imageDataUrl.
+   * @param config Configuration for this provider.
+   * @returns Promise with an array of translated blocks, each with text and bounding box.
+   */
+  fullscreenTranslate?: (params: FullscreenTranslateParams, config: BaseProviderConfig) => Promise<FullscreenTranslateResult>
 }

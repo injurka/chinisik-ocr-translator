@@ -1,8 +1,8 @@
 import type { TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './config'
-import type { LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
+import type { FullscreenTranslateParams, FullscreenTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
 import browser from 'webextension-polyfill'
-import { lexicalAnalysisPrompt } from '~/shared/constant'
+import { fullscreenTranslatePrompt, lexicalAnalysisPrompt } from '~/shared/constant'
 import { TranslationProvider } from '../../../types'
 import { getTranslationProvider } from './provider-factory'
 import { CHINISIK_DEFAULT_API_URL } from './providers/chinisik/config'
@@ -12,9 +12,9 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
   const allSettings = (storage.providerSettings || {}) as AllProviderConfigs
 
   switch (providerId) {
-    case TranslationProvider.Default: // Chinisik
+    case TranslationProvider.Default:
       return {
-        apiKey: allSettings.chinisik?.apiKey || '', // Убедитесь, что ключ по умолчанию или обработка его отсутствия корректна
+        apiKey: allSettings.chinisik?.apiKey || '',
         apiUrl: allSettings.chinisik?.apiUrl || CHINISIK_DEFAULT_API_URL,
       } as ChinisikConfig
     case TranslationProvider.Gemini:
@@ -22,10 +22,9 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
         apiKey: allSettings.gemini?.apiKey || '',
         model: allSettings.gemini?.model || 'gemini-pro-vision',
       } as GeminiConfig
-    // ... другие провайдеры
     default:
       console.warn(`Configuration not defined for provider: ${providerId}, falling back to Chinisik defaults for settings.`)
-      return { // Фолбэк на случай неизвестного провайдера, хотя фабрика должна вернуть ChinisikProvider
+      return {
         apiKey: allSettings.chinisik?.apiKey || '',
         apiUrl: allSettings.chinisik?.apiUrl || CHINISIK_DEFAULT_API_URL,
       } as ChinisikConfig
@@ -112,7 +111,7 @@ export async function performTextToSpeechService(text: string): Promise<Blob> {
   }
 }
 
-export async function performGenericLLMRawQuery(userPrompt: string, systemPrompt: string): Promise<LexicalAnalysisResult> {
+export async function performAnalyzeLexically(userPrompt: string, systemPrompt: string): Promise<LexicalAnalysisResult> {
   const { selectedProvider } = await browser.storage.sync.get({
     selectedProvider: TranslationProvider.Default,
   })
@@ -139,5 +138,40 @@ export async function performGenericLLMRawQuery(userPrompt: string, systemPrompt
       throw new TypeError(`Generic LLM raw query failed with ${currentProviderId}: ${error.message}`)
     }
     throw new Error(`An unknown error occurred during generic LLM raw query with ${currentProviderId}.`)
+  }
+}
+
+export async function performFullscreenTranslate(
+  imageDataUrl: string,
+): Promise<FullscreenTranslateResult> {
+  const { selectedProvider } = await browser.storage.sync.get({
+    selectedProvider: TranslationProvider.Default,
+  })
+  const currentProviderId = selectedProvider as TranslationProvider
+  const providerConfig = await getProviderSettings(currentProviderId)
+  const providerInstance = getTranslationProvider(currentProviderId)
+
+  if (!providerInstance.fullscreenTranslate) {
+    throw new Error(`Fullscreen translate is not supported by the current provider: ${currentProviderId}.`)
+  }
+
+  const systemPrompt = fullscreenTranslatePrompt()
+
+  const requestParams: FullscreenTranslateParams = {
+    imageDataUrl,
+    systemPrompt,
+  }
+
+  try {
+    const result = await providerInstance.fullscreenTranslate(requestParams, providerConfig)
+
+    return result
+  }
+  catch (error) {
+    console.error(`Error during fullscreen translation with ${currentProviderId}:`, error)
+    if (error instanceof Error) {
+      throw new TypeError(`Fullscreen translation failed with ${currentProviderId}: ${error.message}`)
+    }
+    throw new Error(`An unknown error occurred during fullscreen translation with ${currentProviderId}.`)
   }
 }

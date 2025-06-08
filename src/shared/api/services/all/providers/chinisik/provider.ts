@@ -1,7 +1,8 @@
 import type { BaseProviderConfig, ChinisikConfig } from '../../config'
-import type { ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types'
+import type { FullscreenTranslateParams, FullscreenTranslateResult, ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
+// import { abortControllers } from '~/shared/api/abort-controllers'
 import { dataURLtoBlob } from '../../../../../utils/helpers'
 import { CHINISIK_DEFAULT_API_URL } from './config'
 
@@ -79,10 +80,8 @@ export class ChinisikProvider implements ITranslationProvider {
     const { system, user } = params
     const { apiKey, apiUrl } = chinisikSpecificConfig
 
-    const lexicalAnalysisEndpoint = `${apiUrl}/llvm/raw`
-
     try {
-      const data = await $fetch<LexicalAnalysisResult>(lexicalAnalysisEndpoint, {
+      const data = await $fetch<LexicalAnalysisResult>(`${apiUrl}/llvm/raw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,6 +205,114 @@ export class ChinisikProvider implements ITranslationProvider {
       }
       console.error('Unknown API error in ChinisikProvider (textToSpeech):', error)
       throw new Error('Unknown error during Chinisik API text-to-speech request')
+    }
+  }
+
+  public async fullscreenTranslate(
+    params: FullscreenTranslateParams,
+    baseConfig: BaseProviderConfig,
+  ): Promise<FullscreenTranslateResult> {
+    const chinisikSpecificConfig: ChinisikConfig = {
+      apiKey: baseConfig.apiKey || '',
+      apiUrl: baseConfig.apiUrl || CHINISIK_DEFAULT_API_URL,
+    }
+
+    const { imageDataUrl, systemPrompt } = params
+    const { apiKey, apiUrl } = chinisikSpecificConfig
+
+    if (!systemPrompt) {
+      throw new Error('System prompt is required for fullscreen translation.')
+    }
+
+    try {
+      const response = await $fetch<string>(`${apiUrl}/llvm/raw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: {
+          user: [{
+            type: 'image_url',
+            image_url: {
+              url: imageDataUrl,
+              detail: 'high',
+            },
+          }],
+          system: systemPrompt,
+          responseType: 'json_object',
+        },
+      })
+
+      const formatedRawData = response.startsWith('{') ? `[${response}]` : response
+      const parsedData = JSON.parse(formatedRawData)
+
+      if (!Array.isArray(parsedData)) {
+        console.error('Chinisik API fullscreenTranslate: Response is not an array.', response)
+        throw new Error('Chinisik API (fullscreenTranslate) did not return a valid JSON array.')
+      }
+
+      const results: FullscreenTranslateResult = parsedData.map((item: any) => {
+        if (
+          // typeof item.source !== 'string'
+          typeof item.translate !== 'string'
+          // || typeof item.transcription !== 'string'
+          || typeof item.bbox !== 'object'
+          || item.bbox === null
+          || typeof item.bbox.x0 !== 'number'
+          || typeof item.bbox.y0 !== 'number'
+          || typeof item.bbox.x1 !== 'number'
+          || typeof item.bbox.y1 !== 'number'
+        ) {
+          console.warn('Chinisik API fullscreenTranslate: Invalid item structure in response array:', item)
+          return null
+        }
+        return {
+          result: {
+            // source: item.source,
+            translate: item.translate,
+            // transcription: item.transcription,
+          },
+          bbox: {
+            x0: item.bbox.x0,
+            y0: item.bbox.y0,
+            x1: item.bbox.x1,
+            y1: item.bbox.y1,
+          },
+        }
+      }).filter(item => item !== null) as FullscreenTranslateResult
+
+      return results
+    }
+    catch (error) {
+      if (error instanceof FetchError) {
+        const status = error.response?.status || 'Unknown'
+        const statusText = error.response?.statusText || 'Unknown Error'
+        let errorMessage = `Chinisik API fullscreen translation error: ${status} ${statusText}`
+        const responseData = error.data || error.response?._data
+
+        if (responseData) {
+          if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
+            errorMessage += ` - Response: ${responseData}`
+          }
+          else if (typeof responseData === 'object' && responseData !== null) {
+            const rd = responseData as Record<string, any>
+            if (rd.message)
+              errorMessage += ` - ${rd.message}`
+            else if (rd.detail)
+              errorMessage += ` - ${rd.detail}`
+            else if (rd.error)
+              errorMessage += ` - ${rd.error}`
+          }
+          console.error('Chinisik API FullscreenTranslate Error Full Response Data:', responseData)
+        }
+        throw new Error(errorMessage)
+      }
+      if (error instanceof Error) {
+        throw error
+      }
+      console.error('Unknown API error in ChinisikProvider (fullscreenTranslate):', error)
+      throw new Error('Unknown error during Chinisik API fullscreen translation request')
     }
   }
 }

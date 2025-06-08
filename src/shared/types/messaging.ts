@@ -47,6 +47,11 @@ export interface TranslateInlineTextMessage extends BaseMessage {
   systemPrompt?: string
 }
 
+export interface TranslateFullScreenMessage extends BaseMessage {
+  action: 'translateFullScreen'
+  imageDataUrl: string
+}
+
 export type RuntimeMessage =
   | CaptureAreaMessage
   | StartSelectionMessage
@@ -56,6 +61,7 @@ export type RuntimeMessage =
   | TextToSpeechMessage
   | GenericLlmRawQueryMessage
   | TranslateInlineTextMessage
+  | TranslateFullScreenMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 

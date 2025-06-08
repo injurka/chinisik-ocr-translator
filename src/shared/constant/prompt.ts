@@ -150,7 +150,63 @@ function translateExtendedPrompt() {
     Текст для перевода:`
 }
 
+// function fullscreenTranslatePrompt() {
+//     return `
+// You are an expert OCR and translation system. Analyze the provided image.
+// The image has a grid overlay applied to it. Specifically, the image is divided by horizontal and vertical light red lines, creating a 20x20 grid of cells. This grid is intended to help with coordinate localization if needed, but your primary task is to identify text based on its visual appearance.
+// Identify all distinct text blocks. For each text block:
+// 1. Extract the original Chinese text.
+// 2. Provide the bounding box coordinates (x0, y0, x1, y1) for the text block. These coordinates must be absolute pixel values based on the image's dimensions. x0, y0 are the top-left corner, and x1, y1 are the bottom-right corner.
+// 3. Translate the original Chinese text into Russian.
+// 4. Provide the Pinyin transcription for the original Chinese text.
+
+// Return the output STRICTLY as a JSON array of objects. Each object in the array must have the following structure:
+// {
+//   "source": "original Chinese text",
+//   "translate": "Russian translation",
+//   "transcription": "Pinyin transcription",
+//   "bbox": { "x0": <number>, "y0": <number>, "x1": <number>, "y1": <number> }
+// }
+
+// Example of a single object in the array:
+// {
+//   "source": "你好世界",
+//   "translate": "Привет, мир",
+//   "transcription": "nǐ hǎo shìjiè",
+//   "bbox": { "x0": 50, "y0": 100, "x1": 250, "y1": 150 }
+// }
+
+// If no text is found, return an empty JSON array: [].
+// Ensure bounding boxes are accurate and tightly enclose only the text they correspond to.
+// Group closely related lines of text (like lines in a paragraph) into a single text block with a corresponding bounding box.
+// Do not include any explanatory text or markdown formatting outside of the JSON array. The entire response must be a valid JSON array.
+// `
+// }
+
+function fullscreenTranslatePrompt() {
+  return `
+You are an expert OCR and translation system. Analyze the provided image.
+The image has a grid overlay applied to it. Specifically, the image is divided by horizontal and vertical light red lines, creating a grid of cells with a size of 10px. This grid is intended to help with coordinate localization if needed, but your primary task is to identify text based on its visual appearance.
+Identify all distinct text blocks. For each text block:
+1. Extract the original Chinese text.
+2. Provide the bounding box coordinates (x0, y0, x1, y1) for the text block. These coordinates must be absolute pixel values based on the image's dimensions. x0, y0 are the top-left corner, and x1, y1 are the bottom-right corner.
+3. Translate the original Chinese text into Russian.
+
+Return the output STRICTLY as a JSON array of objects. Each object in the array must have the following structure:
+{
+  "translate": "Russian translation",
+  "bbox": { "x0": <number>, "y0": <number>, "x1": <number>, "y1": <number> }
+}
+
+If no text is found, return an empty JSON array: [].
+Ensure bounding boxes are accurate and tightly enclose only the text they correspond to.
+Group closely related lines of text (like lines in a paragraph) into a single text block with a corresponding bounding box.
+Do not include any explanatory text or markdown formatting outside of the JSON array. The entire response must be a valid JSON array.
+`
+}
+
 export {
+  fullscreenTranslatePrompt,
   lexicalAnalysisPrompt,
   questionPrompt,
   translateExtendedPrompt,

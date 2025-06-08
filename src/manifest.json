@@ -70,6 +70,12 @@
         "default": "Ctrl+Shift+S"
       },
       "description": "Start area capture"
+    },
+    "translate-fullscreen": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "OCR and translate entire visible screen"
     }
   }
 }
