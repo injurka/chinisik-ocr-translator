@@ -34,9 +34,6 @@ async function commandHandler(command: string) {
   if (command === 'capture-area') {
     await handleCaptureAreaCommand()
   }
-  else if (command === 'translate-fullscreen') {
-    await handleFullscreenCommand()
-  }
 }
 
 browser.commands.onCommand.addListener(commandHandler)

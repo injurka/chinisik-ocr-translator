@@ -1,4 +1,3 @@
-import type { TranslateFullScreenMessage } from '~/shared/types'
 import browser from 'webextension-polyfill'
 import { getActiveTab } from './utils'
 
@@ -24,27 +23,5 @@ export async function handleCaptureAreaCommand() {
   }
   else {
     console.error('Не найдена активная вкладка для начала выделения.')
-  }
-}
-
-/**
- * Обрабатывает команду "translate-fullscreen".
- * Делает снимок видимой части экрана и отправляет его в content-скрипт.
- */
-export async function handleFullscreenCommand() {
-  const tab = await getActiveTab()
-
-  if (tab?.id) {
-    try {
-      const imageDataUrl = await browser.tabs.captureVisibleTab(undefined, { format: 'png' })
-      if (!imageDataUrl) {
-        throw new Error('Не удалось сделать снимок видимой части вкладки.')
-      }
-      const message: TranslateFullScreenMessage = { action: 'translateFullScreen', imageDataUrl }
-      await browser.tabs.sendMessage(tab.id, message)
-    }
-    catch (error) {
-      console.error('Не удалось отправить сообщение "ocrAndTranslateFullScreen" или сделать снимок экрана:', error)
-    }
   }
 }
