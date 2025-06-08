@@ -1,6 +1,6 @@
 import type { TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './config'
-import type { LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
+import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
 import browser from 'webextension-polyfill'
 import { lexicalAnalysisPrompt } from '~/shared/constant'
 import { TranslationProvider } from '../../../types'
@@ -14,7 +14,7 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
   switch (providerId) {
     case TranslationProvider.Default: // Chinisik
       return {
-        apiKey: allSettings.chinisik?.apiKey || '', // Убедитесь, что ключ по умолчанию или обработка его отсутствия корректна
+        apiKey: allSettings.chinisik?.apiKey || '',
         apiUrl: allSettings.chinisik?.apiUrl || CHINISIK_DEFAULT_API_URL,
       } as ChinisikConfig
     case TranslationProvider.Gemini:
@@ -22,15 +22,16 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
         apiKey: allSettings.gemini?.apiKey || '',
         model: allSettings.gemini?.model || 'gemini-pro-vision',
       } as GeminiConfig
-    // ... другие провайдеры
     default:
       console.warn(`Configuration not defined for provider: ${providerId}, falling back to Chinisik defaults for settings.`)
-      return { // Фолбэк на случай неизвестного провайдера, хотя фабрика должна вернуть ChinisikProvider
+      return {
         apiKey: allSettings.chinisik?.apiKey || '',
         apiUrl: allSettings.chinisik?.apiUrl || CHINISIK_DEFAULT_API_URL,
       } as ChinisikConfig
   }
 }
+
+//
 
 export async function performTranslate(imageDataUrl: string): Promise<TranslationResult> {
   const { selectedProvider } = await browser.storage.sync.get({
@@ -112,7 +113,7 @@ export async function performTextToSpeechService(text: string): Promise<Blob> {
   }
 }
 
-export async function performGenericLLMRawQuery(userPrompt: string, systemPrompt: string): Promise<LexicalAnalysisResult> {
+export async function performInlineTextTranslate(userPrompt: string, systemPrompt: string): Promise<InlineTextTranslateResult> {
   const { selectedProvider } = await browser.storage.sync.get({
     selectedProvider: TranslationProvider.Default,
   })
@@ -120,24 +121,56 @@ export async function performGenericLLMRawQuery(userPrompt: string, systemPrompt
   const providerConfig = await getProviderSettings(currentProviderId)
   const providerInstance = getTranslationProvider(currentProviderId)
 
-  if (!providerInstance.analyzeLexically) {
-    throw new Error(`Generic LLM raw query (/llvm/raw) is not supported by the current provider's registered 'analyzeLexically' method: ${currentProviderId}.`)
+  if (!providerInstance.inlineTextTranslate) {
+    throw new Error(`Inline text translation is not supported by the current provider: ${currentProviderId}.`)
   }
 
-  const requestParams: LexicalAnalysisRequestParams = {
+  try {
+    const result = await providerInstance.inlineTextTranslate(
+      {
+        user: userPrompt,
+        system: systemPrompt,
+      },
+      providerConfig,
+    )
+
+    return result
+  }
+  catch (error) {
+    console.error(`Error during inline text translation with ${currentProviderId}:`, error)
+    if (error instanceof Error) {
+      throw new TypeError(`Inline text translation failed with ${currentProviderId}: ${error.message}`)
+    }
+    throw new Error(`An unknown error occurred during inline text translation with ${currentProviderId}.`)
+  }
+}
+
+export async function performQuestionForAnswer(userPrompt: string, systemPrompt: string): Promise<QuestionForAnswerResult> {
+  const { selectedProvider } = await browser.storage.sync.get({
+    selectedProvider: TranslationProvider.Default,
+  })
+  const currentProviderId = selectedProvider as TranslationProvider
+  const providerConfig = await getProviderSettings(currentProviderId)
+  const providerInstance = getTranslationProvider(currentProviderId)
+
+  if (!providerInstance.questionForAnswer) {
+    throw new Error(`Question/Answer feature is not supported by the current provider: ${currentProviderId}.`)
+  }
+
+  const requestParams: QuestionForAnswerRequestParams = {
     user: userPrompt,
     system: systemPrompt,
   }
 
   try {
-    const result = await providerInstance.analyzeLexically(requestParams, providerConfig)
+    const result = await providerInstance.questionForAnswer(requestParams, providerConfig)
     return result
   }
   catch (error) {
-    console.error(`Error during generic LLM raw query with ${currentProviderId}:`, error)
+    console.error(`Error during question/answer with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Generic LLM raw query failed with ${currentProviderId}: ${error.message}`)
+      throw new TypeError(`Question/Answer failed with ${currentProviderId}: ${error.message}`)
     }
-    throw new Error(`An unknown error occurred during generic LLM raw query with ${currentProviderId}.`)
+    throw new Error(`An unknown error occurred during question/answer with ${currentProviderId}.`)
   }
 }

@@ -7,6 +7,7 @@ import { getActiveTab } from './utils'
  */
 export async function handleCaptureAreaCommand() {
   const tab = await getActiveTab()
+
   if (tab?.id) {
     try {
       await browser.tabs.sendMessage(tab.id, { action: 'startSelection' })

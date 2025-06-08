@@ -1,7 +1,7 @@
 import type { MessageSender, RuntimeMessage } from '../shared/types'
 import browser from 'webextension-polyfill'
 import { initializeStorageDefaults } from '../shared/utils/initialize-storage-defaults'
-import { handleCaptureAreaCommand, handleFullscreenCommand } from './commands'
+import { handleCaptureAreaCommand } from './commands'
 import { messageHandlers } from './handlers'
 
 initializeStorageDefaults()

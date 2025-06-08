@@ -1,7 +1,13 @@
-import type { CaptureAreaMessage, GenericLlmRawQueryMessage, GetLexicalAnalysisMessage, MessageSender, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
+import type { CaptureAreaMessage, GetLexicalAnalysisMessage, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
 import browser from 'webextension-polyfill'
 import { translateMinimalPrompt } from '~/shared/constant'
-import { performAnalyzeLexically, performLexicalAnalysisService, performTextToSpeechService, performTranslate } from '../shared/api'
+import {
+  performInlineTextTranslate,
+  performLexicalAnalysisService,
+  performQuestionForAnswer,
+  performTextToSpeechService,
+  performTranslate,
+} from '../shared/api'
 import { cropImage } from '../shared/utils/helpers'
 import { blobToDataUrl, sendErrorToTab } from './utils'
 
@@ -66,12 +72,12 @@ async function handleTextToSpeech(request: TextToSpeechMessage) {
   }
 }
 
-async function handleGenericLlmQuery(request: GenericLlmRawQueryMessage) {
+async function handleQuestionForAnswer(request: QuestionForAnswerMessage) {
   if (!request.userPrompt || !request.systemPrompt) {
     return { error: 'Отсутствует пользовательский или системный промпт.' }
   }
   try {
-    const result = await performAnalyzeLexically(request.userPrompt, request.systemPrompt)
+    const result = await performQuestionForAnswer(request.userPrompt, request.systemPrompt)
     return { data: result }
   }
   catch (error) {
@@ -85,7 +91,7 @@ async function handleTranslateInlineText(request: TranslateInlineTextMessage) {
     return { error: 'Текст отсутствует для инлайн-перевода.' }
   }
   try {
-    const result = await performAnalyzeLexically(request.text, translateMinimalPrompt())
+    const result = await performInlineTextTranslate(request.text, translateMinimalPrompt())
     return { data: result }
   }
   catch (error) {
@@ -94,11 +100,10 @@ async function handleTranslateInlineText(request: TranslateInlineTextMessage) {
   }
 }
 
-// Карта обработчиков для диспатчера
 export const messageHandlers: Record<string, (request: any, sender: MessageSender) => Promise<any>> = {
   captureAndTranslate: handleCaptureAndTranslate,
   getLexicalAnalysis: handleGetLexicalAnalysis,
   textToSpeech: handleTextToSpeech,
-  genericLlmRawQuery: handleGenericLlmQuery,
   translateInlineText: handleTranslateInlineText,
+  questionForAnswer: handleQuestionForAnswer,
 }

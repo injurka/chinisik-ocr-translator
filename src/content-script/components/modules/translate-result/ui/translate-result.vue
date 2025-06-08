@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { GenericLlmRawQueryMessage, TranslationResult as TranslationDataType } from '../../../../../shared/types'
+import type { QuestionForAnswerMessage, TranslationResult as TranslationDataType } from '../../../../../shared/types'
 import type { ControlValues } from './sections/control-menu.vue'
 import type { LexicalAnalysisResult } from '~/shared/api/services/all/types'
 import { Icon } from '@iconify/vue'
@@ -66,8 +66,8 @@ async function handleSubmitQuestion(question: string) {
   questionAnswerError.value = null
 
   try {
-    const message: GenericLlmRawQueryMessage = {
-      action: 'genericLlmRawQuery',
+    const message: QuestionForAnswerMessage = {
+      action: 'questionForAnswer',
       userPrompt: question,
       systemPrompt: questionPrompt(props.data.source, props.data.translate),
     }

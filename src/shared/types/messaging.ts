@@ -35,8 +35,8 @@ export interface TextToSpeechMessage extends BaseMessage {
   text: string
 }
 
-export interface GenericLlmRawQueryMessage extends BaseMessage {
-  action: 'genericLlmRawQuery'
+export interface QuestionForAnswerMessage extends BaseMessage {
+  action: 'questionForAnswer'
   userPrompt: string
   systemPrompt: string
 }
@@ -54,7 +54,7 @@ export type RuntimeMessage =
   | ShowErrorMessage
   | GetLexicalAnalysisMessage
   | TextToSpeechMessage
-  | GenericLlmRawQueryMessage
+  | QuestionForAnswerMessage
   | TranslateInlineTextMessage
 
 export type MessageSender = browser.Runtime.MessageSender

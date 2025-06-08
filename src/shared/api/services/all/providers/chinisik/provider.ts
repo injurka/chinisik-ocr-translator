@@ -1,11 +1,28 @@
 import type { BaseProviderConfig, ChinisikConfig } from '../../config'
-import type { ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types'
+import type { InlineTextTranslateResult, ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
 import { dataURLtoBlob } from '../../../../../utils/helpers'
 import { CHINISIK_DEFAULT_API_URL } from './config'
 
 export class ChinisikProvider implements ITranslationProvider {
+  private async rawLlm<T>(config: ChinisikConfig, prompt: { user: string, system: string }): Promise<T> {
+    const { apiKey, apiUrl } = config
+
+    const data = await $fetch<T>(`${apiUrl}/llvm/raw`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: {
+        ...prompt,
+      },
+    })
+
+    return data
+  }
+
   public async translate(
     params: TranslateRequestParams,
     baseConfig: BaseProviderConfig,
@@ -76,23 +93,11 @@ export class ChinisikProvider implements ITranslationProvider {
       apiUrl: baseConfig.apiUrl || CHINISIK_DEFAULT_API_URL,
     }
 
-    const { system, user } = params
-    const { apiKey, apiUrl } = chinisikSpecificConfig
-
-    const lexicalAnalysisEndpoint = `${apiUrl}/llvm/raw`
-
     try {
-      const data = await $fetch<LexicalAnalysisResult>(lexicalAnalysisEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: {
-          system,
-          user,
-        },
-      })
+      const data = this.rawLlm<LexicalAnalysisResult>(
+        chinisikSpecificConfig,
+        params,
+      )
 
       if (data === undefined) {
         throw new Error('Could not extract lexical analysis from Chinisik API response.')
@@ -206,6 +211,110 @@ export class ChinisikProvider implements ITranslationProvider {
       }
       console.error('Unknown API error in ChinisikProvider (textToSpeech):', error)
       throw new Error('Unknown error during Chinisik API text-to-speech request')
+    }
+  }
+
+  public async inlineTextTranslate(
+    params: LexicalAnalysisRequestParams,
+    baseConfig: BaseProviderConfig,
+  ): Promise<InlineTextTranslateResult> {
+    const chinisikSpecificConfig: ChinisikConfig = {
+      apiKey: baseConfig.apiKey || '',
+      apiUrl: baseConfig.apiUrl || CHINISIK_DEFAULT_API_URL,
+    }
+
+    try {
+      const data = this.rawLlm<LexicalAnalysisResult>(
+        chinisikSpecificConfig,
+        params,
+      )
+
+      if (data === undefined) {
+        throw new Error('Could not extract lexical analysis from Chinisik API response.')
+      }
+      return data
+    }
+    catch (error) {
+      if (error instanceof FetchError) {
+        const status = error.response?.status || 'Unknown'
+        const statusText = error.response?.statusText || 'Unknown Error'
+        let errorMessage = `Chinisik API lexical analysis error: ${status} ${statusText}`
+        const responseData = error.data || error.response?._data
+
+        if (responseData) {
+          if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
+            errorMessage += ` - Response: ${responseData}`
+          }
+          else if (typeof responseData === 'object' && responseData !== null) {
+            const rd = responseData as Record<string, any>
+            if (rd.message)
+              errorMessage += ` - ${rd.message}`
+            else if (rd.detail)
+              errorMessage += ` - ${rd.detail}`
+            else if (rd.error)
+              errorMessage += ` - ${rd.error}`
+          }
+          console.error('Chinisik API InlineTextTranslate Error Full Response Data:', responseData)
+        }
+        throw new Error(errorMessage)
+      }
+      if (error instanceof Error) {
+        throw error
+      }
+      console.error('Unknown API error in ChinisikProvider (InlineTextTranslate):', error)
+      throw new Error('Unknown error during Chinisik API InlineTextTranslate request')
+    }
+  }
+
+  public async questionForAnswer(
+    params: QuestionForAnswerRequestParams,
+    baseConfig: BaseProviderConfig,
+  ): Promise<QuestionForAnswerResult> {
+    const chinisikSpecificConfig: ChinisikConfig = {
+      apiKey: baseConfig.apiKey || '',
+      apiUrl: baseConfig.apiUrl || CHINISIK_DEFAULT_API_URL,
+    }
+
+    try {
+      const data = await this.rawLlm<QuestionForAnswerResult>(
+        chinisikSpecificConfig,
+        params,
+      )
+
+      if (data === undefined) {
+        throw new Error('Could not extract answer from Chinisik API response.')
+      }
+      return data
+    }
+    catch (error) {
+      if (error instanceof FetchError) {
+        const status = error.response?.status || 'Unknown'
+        const statusText = error.response?.statusText || 'Unknown Error'
+        let errorMessage = `Chinisik API question for answer error: ${status} ${statusText}`
+        const responseData = error.data || error.response?._data
+
+        if (responseData) {
+          if (typeof responseData === 'string' && responseData.length > 0 && responseData.length < 300) {
+            errorMessage += ` - Response: ${responseData}`
+          }
+          else if (typeof responseData === 'object' && responseData !== null) {
+            const rd = responseData as Record<string, any>
+            if (rd.message)
+              errorMessage += ` - ${rd.message}`
+            else if (rd.detail)
+              errorMessage += ` - ${rd.detail}`
+            else if (rd.error)
+              errorMessage += ` - ${rd.error}`
+          }
+          console.error('Chinisik API QuestionForAnswer Error Full Response Data:', responseData)
+        }
+        throw new Error(errorMessage)
+      }
+      if (error instanceof Error) {
+        throw error
+      }
+      console.error('Unknown API error in ChinisikProvider (questionForAnswer):', error)
+      throw new Error('Unknown error during Chinisik API question for answer request')
     }
   }
 }

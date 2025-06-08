@@ -1,11 +1,19 @@
 import type { BaseProviderConfig } from './config'
 import type { TranslationResult } from '~/shared/types'
 
-export interface LexicalAnalysisRequestParams {
+export interface LlmPromptParams {
   user: string
   system: string
 }
+
+export type LexicalAnalysisRequestParams = LlmPromptParams
 export type LexicalAnalysisResult = string
+
+export type InlineTextTranslateRequestParams = LlmPromptParams
+export type InlineTextTranslateResult = string
+
+export type QuestionForAnswerRequestParams = LlmPromptParams
+export type QuestionForAnswerResult = string
 
 export interface TranslateRequestParams {
   imageDataUrl: string
@@ -38,5 +46,18 @@ export interface ITranslationProvider {
    */
   textToSpeech?: (params: TextToSpeechRequestParams, config: BaseProviderConfig) => Promise<TextToSpeechResult>
 
+  /**
+   * Выполняет лексический анализ предложения.
+   */
   analyzeLexically: (params: LexicalAnalysisRequestParams, config: BaseProviderConfig) => Promise<LexicalAnalysisResult>
+
+  /**
+   * Выполняет инлайн-перевод выделенного текста.
+   */
+  inlineTextTranslate: (params: InlineTextTranslateRequestParams, config: BaseProviderConfig) => Promise<InlineTextTranslateResult>
+
+  /**
+   * Задает вопрос по контексту переведенного текста.
+   */
+  questionForAnswer: (params: QuestionForAnswerRequestParams, config: BaseProviderConfig) => Promise<QuestionForAnswerResult>
 }
