@@ -1,11 +1,11 @@
 import type { TranslationResult } from '../../../types'
-import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './config'
-import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types'
+import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './types/config'
+import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types/provider'
 import browser from 'webextension-polyfill'
 import { lexicalAnalysisPrompt } from '~/shared/constant'
 import { TranslationProvider } from '../../../types'
-import { getTranslationProvider } from './provider-factory'
 import { CHINISIK_DEFAULT_API_URL } from './providers/chinisik/config'
+import { getTranslationProvider } from './utils/provider-factory'
 
 export async function getProviderSettings(providerId: TranslationProvider): Promise<BaseProviderConfig> {
   const storage = await browser.storage.sync.get('providerSettings')

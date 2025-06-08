@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AllProviderConfigs, ChinisikConfig, GeminiConfig, OllamaConfig } from '../shared/api/services/all/config' // Добавлен OllamaConfig
+import type { AllProviderConfigs, ChinisikConfig, GeminiConfig, OllamaConfig } from '../shared/api/services/all/types/config'
 import type { Theme } from '../shared/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
@@ -8,7 +8,7 @@ import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/all/providers/c
 import { TranslationProvider } from '../shared/types'
 
 interface ProviderField {
-  key: keyof ChinisikConfig | keyof GeminiConfig | keyof OllamaConfig // Добавлен keyof OllamaConfig
+  key: keyof ChinisikConfig | keyof GeminiConfig | keyof OllamaConfig
   label: string
   type: 'text' | 'password' | 'url'
   placeholder?: string
@@ -35,25 +35,15 @@ const providerDefinitions: ProviderUIDefinition[] = [
   {
     id: TranslationProvider.Gemini,
     name: 'Google Gemini',
-    fields: [ // Эти поля будут скрыты, пока провайдер "в разработке"
+    fields: [
       { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Enter Gemini API Key' },
       { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., gemini-pro-vision', isOptional: true },
     ],
     helpText: 'Uses Google\'s Gemini AI. Requires an API key.',
   },
-  // { // Раскомментировано и добавлено определение для Ollama
-  //   id: TranslationProvider.OLLAMA,
-  //   name: 'Ollama',
-  //   fields: [ // Эти поля будут скрыты, пока провайдер "в разработке"
-  //     { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: 'http://localhost:11434' },
-  //     { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., llava' },
-  //     { key: 'keepAlive', label: 'Keep Alive', type: 'text', placeholder: '5m', isOptional: true },
-  //   ],
-  //   helpText: 'Uses a local Ollama instance. Configure API URL and model.',
-  // },
+
 ]
 
-// Список провайдеров, которые находятся в разработке
 const providersInDevelopment = [TranslationProvider.Gemini]
 
 // --- Реактивное состояние ---
@@ -61,7 +51,6 @@ const selectedProvider = ref<TranslationProvider>(TranslationProvider.Default)
 const providerSettingsForm = reactive<AllProviderConfigs>({
   [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
   [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
-  // [TranslationProvider.OLLAMA]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' }, // Добавлено для Ollama
 })
 const selectedTheme = ref<Theme>('light')
 const showKey = ref(false)
@@ -109,7 +98,6 @@ async function loadSettings() {
     const defaultProviderSettings: AllProviderConfigs = {
       [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
       [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
-      // [TranslationProvider.Ollama]: { apiUrl: 'http://localhost:11434/api/generate', model: 'llava', keepAlive: '5m' }, // Добавлено для Ollama
     }
     const defaultTheme: Theme = 'light'
 
@@ -118,9 +106,9 @@ async function loadSettings() {
     const loadedProviderSettings = result.providerSettings || {}
     for (const providerIdStr in defaultProviderSettings) {
       const pId = providerIdStr as TranslationProvider
-      // Убедимся, что providerSettingsForm[pId] существует перед присвоением
+
       if (!providerSettingsForm[pId]) {
-        providerSettingsForm[pId] = {} as any // Инициализация, если необходимо
+        providerSettingsForm[pId] = {} as any
       }
       providerSettingsForm[pId] = {
         ...defaultProviderSettings[pId],
@@ -154,11 +142,10 @@ const currentProviderUI = computed(() => {
 })
 
 const currentFormData = computed(() => {
-  // Убедимся, что selectedProvider.value является ключом в providerSettingsForm
   if (selectedProvider.value in providerSettingsForm) {
     return providerSettingsForm[selectedProvider.value]
   }
-  return undefined // Или вернуть объект по умолчанию/пустой объект
+  return undefined
 })
 
 const currentThemeIcon = computed(() => {

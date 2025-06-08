@@ -1,14 +1,11 @@
-import type { ITranslationProvider } from './types'
-import { TranslationProvider } from '../../../types'
-import { ChinisikProvider } from './providers/chinisik/provider'
-// import { GeminiProvider } from './providers/gemini/GeminiProvider'; // Когда будет готово
-// import { OllamaProvider } from './providers/ollama/OllamaProvider'; // Когда будет готово
+import type { ITranslationProvider } from '../types/provider'
+import { TranslationProvider } from '../../../../types'
+import { ChinisikProvider } from '../providers/chinisik/provider'
 
 // Реестр конструкторов провайдеров
 const providerMap: Record<TranslationProvider, (new () => ITranslationProvider) | undefined> = {
   [TranslationProvider.Default]: ChinisikProvider,
   [TranslationProvider.Gemini]: undefined,
-  // [TranslationProvider.OLLAMA]: OllamaProvider,
 }
 
 export function getTranslationProvider(providerId: TranslationProvider): ITranslationProvider {

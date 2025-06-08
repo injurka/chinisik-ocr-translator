@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { QuestionForAnswerMessage, TranslationResult as TranslationDataType } from '../../../../../shared/types'
 import type { ControlValues } from './sections/control-menu.vue'
-import type { LexicalAnalysisResult } from '~/shared/api/services/all/types'
+import type { LexicalAnalysisResult } from '~/shared/api/services/all/types/provider'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import browser from 'webextension-polyfill'
