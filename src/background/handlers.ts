@@ -1,5 +1,7 @@
-import type { CaptureAreaMessage, GetLexicalAnalysisMessage, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
+// --- Импорты остаются те же ---
+import type { AbortRequestMessage, CaptureAreaMessage, GetLexicalAnalysisMessage, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
 import browser from 'webextension-polyfill'
+import { requestControllers } from '~/shared/api/request-controllers'
 import { translateMinimalPrompt } from '~/shared/constant'
 import {
   performInlineTextTranslate,
@@ -38,7 +40,11 @@ async function handleCaptureAndTranslate(request: CaptureAreaMessage, sender: Me
     return { success: true, translation }
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      return
+
     sendErrorToTab(tabId, error, 'captureAndTranslate')
+
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
@@ -52,6 +58,9 @@ async function handleGetLexicalAnalysis(request: GetLexicalAnalysisMessage) {
     return { data: analysisResult }
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      return
+
     console.error('Ошибка при лексическом анализе:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
@@ -67,6 +76,9 @@ async function handleTextToSpeech(request: TextToSpeechMessage) {
     return { audioDataUrl }
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      return
+
     console.error('Ошибка при озвучивании текста:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
@@ -78,9 +90,13 @@ async function handleQuestionForAnswer(request: QuestionForAnswerMessage) {
   }
   try {
     const result = await performQuestionForAnswer(request.userPrompt, request.systemPrompt)
+
     return { data: result }
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      return
+
     console.error('Ошибка при выполнении LLM запроса:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
@@ -95,9 +111,18 @@ async function handleTranslateInlineText(request: TranslateInlineTextMessage) {
     return { data: result }
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      return
+
     console.error('Ошибка при инлайн-переводе:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
+}
+
+async function handleAbortRequest(request: AbortRequestMessage) {
+  request.keys.forEach((key) => {
+    requestControllers[key].abort()
+  })
 }
 
 export const messageHandlers: Record<string, (request: any, sender: MessageSender) => Promise<any>> = {
@@ -106,4 +131,5 @@ export const messageHandlers: Record<string, (request: any, sender: MessageSende
   textToSpeech: handleTextToSpeech,
   translateInlineText: handleTranslateInlineText,
   questionForAnswer: handleQuestionForAnswer,
+  abortRequest: handleAbortRequest,
 }

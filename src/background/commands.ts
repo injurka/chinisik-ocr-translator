@@ -14,6 +14,7 @@ export async function handleCaptureAreaCommand() {
     }
     catch (error) {
       console.error('Не удалось отправить сообщение "startSelection":', error)
+
       browser.notifications.create({
         type: 'basic',
         iconUrl: browser.runtime.getURL('icon/128.png'),

@@ -45,13 +45,18 @@ export async function performTranslate(imageDataUrl: string): Promise<Translatio
 
   try {
     const result = await translator.translate(requestParams, providerConfig)
+
     return result
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      throw error
+
     console.error(`Error during translation with ${currentProviderId}:`, error)
     if (error instanceof Error) {
       throw new TypeError(`Translation failed with ${currentProviderId}: ${error.message}`)
     }
+
     throw new Error(`An unknown error occurred during translation with ${currentProviderId}.`)
   }
 }
@@ -75,9 +80,13 @@ export async function performLexicalAnalysisService(sentence: string): Promise<L
 
   try {
     const result = await providerInstance.analyzeLexically(requestParams, providerConfig)
+
     return result
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      throw error
+
     console.error(`Error during lexical analysis with ${currentProviderId}:`, error)
     if (error instanceof Error) {
       throw new TypeError(`Lexical analysis failed with ${currentProviderId}: ${error.message}`)
@@ -102,9 +111,13 @@ export async function performTextToSpeechService(text: string): Promise<Blob> {
 
   try {
     const result = await providerInstance.textToSpeech(requestParams, providerConfig)
+
     return result
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      throw error
+
     console.error(`Error during text-to-speech with ${currentProviderId}:`, error)
     if (error instanceof Error) {
       throw new TypeError(`Text-to-speech failed with ${currentProviderId}: ${error.message}`)
@@ -164,9 +177,13 @@ export async function performQuestionForAnswer(userPrompt: string, systemPrompt:
 
   try {
     const result = await providerInstance.questionForAnswer(requestParams, providerConfig)
+
     return result
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      throw error
+
     console.error(`Error during question/answer with ${currentProviderId}:`, error)
     if (error instanceof Error) {
       throw new TypeError(`Question/Answer failed with ${currentProviderId}: ${error.message}`)

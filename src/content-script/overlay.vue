@@ -1,11 +1,9 @@
-<!-- eslint-disable perfectionist/sort-imports -->
-
 <script lang="ts" setup>
 import type { AreaToCapture, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
 import type { ControlValues } from './components/modules/translate-result/ui/sections/control-menu.vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import browser from 'webextension-polyfill'
-import { STORAGE_KEY_CONTROLS, STORAGE_KEY_THEME } from '~/shared/constant'
+import { ALL_KEYS, STORAGE_KEY_CONTROLS, STORAGE_KEY_THEME } from '~/shared/constant'
 import { Selection } from './components/modules/selection'
 import { TranslateLoading } from './components/modules/translate-loading'
 import { TranslateResult } from './components/modules/translate-result'
@@ -59,6 +57,12 @@ watch(currentState, (newState) => {
     capturedImagePreview.value = null
 })
 
+watch(isSelectionOverlayVisible, (isVisible) => {
+  if (!isVisible && currentState.value === 'SELECTING') {
+    currentState.value = 'IDLE'
+  }
+})
+
 watch(sharedControls, (newValues) => {
   saveControls(newValues)
 }, { deep: true })
@@ -99,6 +103,7 @@ async function handleSelection(area: AreaToCapture) {
 function closeComponentAndResetState() {
   currentState.value = 'IDLE'
   capturedImagePreview.value = null
+  browser.runtime.sendMessage({ action: 'abortRequest', keys: ALL_KEYS })
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -205,7 +210,7 @@ onUnmounted(() => {
     max-width: 90vw;
     background-color: var(--bg-primary-color, #ffffff);
     border: 1px solid var(--border-secondary-color, #e0e0e0);
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;

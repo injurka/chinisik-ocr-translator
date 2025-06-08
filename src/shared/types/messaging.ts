@@ -1,4 +1,5 @@
 import type browser from 'webextension-polyfill'
+import type { ITranslationProvider } from '../api/services/all/types'
 import type { AreaToCapture, TranslationResultData } from './common'
 
 export interface BaseMessage {
@@ -47,6 +48,11 @@ export interface TranslateInlineTextMessage extends BaseMessage {
   systemPrompt?: string
 }
 
+export interface AbortRequestMessage extends BaseMessage {
+  action: 'abortRequest'
+  keys: (keyof ITranslationProvider)[]
+}
+
 export type RuntimeMessage =
   | CaptureAreaMessage
   | StartSelectionMessage
@@ -56,6 +62,7 @@ export type RuntimeMessage =
   | TextToSpeechMessage
   | QuestionForAnswerMessage
   | TranslateInlineTextMessage
+  | AbortRequestMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 

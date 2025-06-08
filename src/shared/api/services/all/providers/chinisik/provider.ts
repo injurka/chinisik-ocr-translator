@@ -3,6 +3,7 @@ import type { BaseProviderConfig, ChinisikConfig } from '../../types/config'
 import type { InlineTextTranslateResult, ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types/provider'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
+import { requestControllers } from '~/shared/api/request-controllers'
 import { dataURLtoBlob } from '../../../../../utils/helpers'
 import { CHINISIK_DEFAULT_API_URL } from './config'
 
@@ -53,14 +54,25 @@ export class ChinisikProvider implements ITranslationProvider {
    * @param context - Контекст для логирования и сообщений об ошибках.
    */
   private async requestWrapper<T>(
-    requestFn: () => Promise<T>,
-    context: string,
+    requestFn: (signal: AbortSignal) => Promise<T>,
+    key: keyof ITranslationProvider,
   ): Promise<T> {
+    requestControllers[key].abort()
+    const newController = new AbortController()
+    requestControllers[key] = newController
+
     try {
-      return await requestFn()
+      return await requestFn(newController.signal)
     }
     catch (error) {
-      this.handleApiError(error, context)
+      if (newController.signal.aborted) {
+        const abortError = new Error('Request was aborted.', { cause: 'AbortController' })
+        abortError.name = 'AbortError'
+        throw abortError
+      }
+      else {
+        this.handleApiError(error, key)
+      }
     }
   }
 
@@ -77,7 +89,7 @@ export class ChinisikProvider implements ITranslationProvider {
   /**
    * Внутренний метод для вызова raw LLM эндпоинта.
    */
-  private rawLlm<T>(config: ChinisikConfig, prompt: { user: string, system: string }): Promise<T> {
+  private rawLlm<T>(config: ChinisikConfig, prompt: { user: string, system: string }, signal?: AbortSignal): Promise<T> {
     const { apiKey, apiUrl } = config
 
     return $fetch<T>(`${apiUrl}/llvm/raw`, {
@@ -87,6 +99,7 @@ export class ChinisikProvider implements ITranslationProvider {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: { ...prompt },
+      signal,
     })
   }
 
@@ -94,8 +107,7 @@ export class ChinisikProvider implements ITranslationProvider {
     params: TranslateRequestParams,
     baseConfig: BaseProviderConfig,
   ): Promise<TranslationResult> {
-    const context = 'image translation'
-    return this.requestWrapper(async () => {
+    return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
       const { imageDataUrl } = params
 
@@ -107,38 +119,36 @@ export class ChinisikProvider implements ITranslationProvider {
         method: 'POST',
         headers: { Authorization: config.apiKey },
         body: formData,
+        signal,
       })
 
       if (!data) {
         throw new Error('Could not extract translation from API response.')
       }
       return data
-    }, context)
+    }, 'translate')
   }
 
   public analyzeLexically(
     params: LexicalAnalysisRequestParams,
     baseConfig: BaseProviderConfig,
   ): Promise<LexicalAnalysisResult> {
-    const context = 'lexical analysis'
-    return this.requestWrapper(async () => {
+    return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<LexicalAnalysisResult>(config, params)
+      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
 
       if (!data) {
         throw new Error('Could not extract lexical analysis from API response.')
       }
       return data
-    }, context)
+    }, 'analyzeLexically')
   }
 
   public textToSpeech(
     params: TextToSpeechRequestParams,
     baseConfig: BaseProviderConfig,
   ): Promise<TextToSpeechResult> {
-    const context = 'text-to-speech'
-
-    return this.requestWrapper(async () => {
+    return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
       const { text, model = 'gpt-4o-mini-tts', voice = 'alloy', response_format = 'mp3', speed = 1 } = params
 
@@ -156,46 +166,43 @@ export class ChinisikProvider implements ITranslationProvider {
           response_format,
           speed,
         },
+        signal,
       })
 
       if (!(audioBlob instanceof Blob)) {
         throw new TypeError('API did not return a valid audio Blob.')
       }
       return audioBlob
-    }, context)
+    }, 'textToSpeech')
   }
 
   public inlineTextTranslate(
     params: LexicalAnalysisRequestParams,
     baseConfig: BaseProviderConfig,
   ): Promise<InlineTextTranslateResult> {
-    const context = 'inline text translate'
-
-    return this.requestWrapper(async () => {
+    return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<LexicalAnalysisResult>(config, params)
+      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
 
       if (!data) {
         throw new Error('Could not extract lexical analysis from API response.')
       }
       return data
-    }, context)
+    }, 'inlineTextTranslate')
   }
 
   public questionForAnswer(
     params: QuestionForAnswerRequestParams,
     baseConfig: BaseProviderConfig,
   ): Promise<QuestionForAnswerResult> {
-    const context = 'question for answer'
-
-    return this.requestWrapper(async () => {
+    return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<QuestionForAnswerResult>(config, params)
+      const data = await this.rawLlm<QuestionForAnswerResult>(config, params, signal)
 
       if (!data) {
         throw new Error('Could not extract answer from API response.')
       }
       return data
-    }, context)
+    }, 'questionForAnswer')
   }
 }
