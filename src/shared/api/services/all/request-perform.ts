@@ -1,5 +1,5 @@
 import type { TranslationResult } from '../../../types'
-import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, GeminiConfig } from './types/config'
+import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, CustomConfig, GeminiConfig } from './types/config'
 import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types/provider'
 import browser from 'webextension-polyfill'
 import { lexicalAnalysisPrompt } from '~/shared/constant'
@@ -22,6 +22,13 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
         apiKey: allSettings.gemini?.apiKey || '',
         model: allSettings.gemini?.model || 'gemini-pro-vision',
       } as GeminiConfig
+    case TranslationProvider.Custom:
+      return {
+        apiKey: allSettings.custom?.apiKey || '',
+        apiUrl: allSettings.custom?.apiUrl || '',
+        model: allSettings.custom?.model || '',
+        ttsModel: allSettings.custom?.ttsModel || '',
+      } as CustomConfig
     default:
       console.warn(`Configuration not defined for provider: ${providerId}, falling back to Chinisik defaults for settings.`)
       return {

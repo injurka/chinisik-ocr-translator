@@ -15,11 +15,12 @@ export async function initializeStorageDefaults() {
         apiKey: '',
         model: 'gemini-pro-vision',
       },
-      // [TranslationProvider.OLLAMA]: {
-      //   apiUrl: 'http://localhost:11434/api/generate', // Дефолтный локальный URL
-      //   model: 'llava',
-      //   keepAlive: '5m',
-      // },
+      [TranslationProvider.Custom]: {
+        apiKey: '',
+        apiUrl: '',
+        model: '',
+        ttsModel: '',
+      },
     },
     appTheme: 'light',
     [STORAGE_KEY_CONTROLS]: {

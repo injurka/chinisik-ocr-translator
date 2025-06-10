@@ -16,13 +16,15 @@ export interface GeminiConfig extends BaseProviderConfig {
   model?: string
 }
 
-export interface OllamaConfig extends BaseProviderConfig {
-  apiUrl: string
-  model?: string
-  keepAlive?: string
+export interface CustomConfig extends BaseProviderConfig {
+  apiKey?: string // Не все OpenAI-совместимые API требуют ключ
+  apiUrl: string // URL обязателен
+  model: string // Модель обязательна
+  ttsModel?: string
 }
 
 export interface AllProviderConfigs {
   [TranslationProvider.Default]?: Partial<ChinisikConfig>
   [TranslationProvider.Gemini]?: Partial<GeminiConfig>
+  [TranslationProvider.Custom]?: Partial<CustomConfig>
 }

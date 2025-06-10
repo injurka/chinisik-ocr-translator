@@ -185,6 +185,7 @@ onUnmounted(() => {
   overflow-y: auto;
   flex-grow: 1;
   font-size: 0.95em;
+  padding: 16px;
 
   .question-input-area {
     display: flex;

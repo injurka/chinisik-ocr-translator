@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AllProviderConfigs, ChinisikConfig, GeminiConfig, OllamaConfig } from '../shared/api/services/all/types/config'
+import type { AllProviderConfigs, ChinisikConfig, CustomConfig, GeminiConfig } from '../shared/api/services/all/types/config'
 import type { Theme } from '../shared/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
@@ -8,7 +8,7 @@ import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/all/providers/c
 import { TranslationProvider } from '../shared/types'
 
 interface ProviderField {
-  key: keyof ChinisikConfig | keyof GeminiConfig | keyof OllamaConfig
+  key: keyof ChinisikConfig | keyof GeminiConfig | keyof CustomConfig
   label: string
   type: 'text' | 'password' | 'url'
   placeholder?: string
@@ -27,21 +27,31 @@ const providerDefinitions: ProviderUIDefinition[] = [
     id: TranslationProvider.Default,
     name: 'Chinisik',
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Enter Chinisik API Key' },
+      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите Chinisik API ключ' },
       { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: CHINISIK_DEFAULT_API_URL, isOptional: true },
     ],
-    helpText: '',
+    helpText: 'Бесплатный провайдер от Сhinisik.',
   },
   {
     id: TranslationProvider.Gemini,
     name: 'Google Gemini',
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Enter Gemini API Key' },
+      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите Gemini API ключ' },
       { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., gemini-pro-vision', isOptional: true },
     ],
-    helpText: 'Uses Google\'s Gemini AI. Requires an API key.',
+    helpText: 'Использует Google\'s Gemini AI. Требуется ключ API.',
   },
-
+  {
+    id: TranslationProvider.Custom,
+    name: 'Custom (OpenAI)',
+    fields: [
+      { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: 'https://api.example.com/v1' },
+      { key: 'model', label: 'Chat Model Name', type: 'text', placeholder: 'e.g., gpt-4o-mini' },
+      { key: 'ttsModel', label: 'TTS Model', type: 'text', placeholder: 'e.g., tts-1-hd' },
+      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите API ключ' },
+    ],
+    helpText: 'Используйте любую конечную точку API, совместимую с OpenAI. Если модель TTS не указана, будет использована модель по умолчанию.',
+  },
 ]
 
 const providersInDevelopment = [TranslationProvider.Gemini]
@@ -51,6 +61,7 @@ const selectedProvider = ref<TranslationProvider>(TranslationProvider.Default)
 const providerSettingsForm = reactive<AllProviderConfigs>({
   [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
   [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
+  [TranslationProvider.Custom]: { apiKey: '', apiUrl: '', model: '', ttsModel: '' },
 })
 const selectedTheme = ref<Theme>('light')
 const showKey = ref(false)
@@ -98,6 +109,7 @@ async function loadSettings() {
     const defaultProviderSettings: AllProviderConfigs = {
       [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
       [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
+      [TranslationProvider.Custom]: { apiKey: '', apiUrl: '', model: '', ttsModel: '' },
     }
     const defaultTheme: Theme = 'light'
 
@@ -294,6 +306,8 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .popup {
+  display: flex;
+  flex-direction: column;
   min-height: 600px;
   width: 380px;
   font-family: var(--chinisik-base-font-family);
@@ -356,6 +370,7 @@ onMounted(async () => {
 
 .content {
   padding: 16px;
+  flex-grow: 1;
 }
 .loading-state {
   text-align: center;
