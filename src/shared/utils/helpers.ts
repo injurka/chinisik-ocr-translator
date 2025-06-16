@@ -1,4 +1,5 @@
 import type { CaptureAreaMessage } from '../types'
+import { LocalizedError } from './error'
 
 async function cropImage(
   imageDataUrl: string,
@@ -30,7 +31,7 @@ async function cropImage(
     const ctx = canvas.getContext('2d')
 
     if (!ctx) {
-      throw new Error('Could not get 2D context from OffscreenCanvas')
+      throw new LocalizedError('errors.capture.contextFailed')
     }
 
     // 4. Рисуем обрезанную часть ImageBitmap на OffscreenCanvas
@@ -52,7 +53,7 @@ async function cropImage(
     // OffscreenCanvas.convertToBlob() является предпочтительным асинхронным методом.
     const resultBlob = await canvas.convertToBlob({ type: 'image/png' })
     if (!resultBlob) {
-      throw new Error('Failed to convert OffscreenCanvas to Blob.')
+      throw new LocalizedError('errors.capture.blobConversionFailed')
     }
 
     // Конвертируем Blob обратно в Data URL
@@ -83,11 +84,11 @@ async function cropImage(
 function dataURLtoBlob(dataurl: string): Blob {
   const arr = dataurl.split(',')
   if (arr.length < 2) {
-    throw new Error('Invalid data URL format for blob conversion')
+    throw new LocalizedError('errors.capture.invalidDataUrl')
   }
   const mimeMatch = arr[0].match(/:(.*?);/)
   if (!mimeMatch || mimeMatch.length < 2) {
-    throw new Error('Could not parse MIME type from data URL')
+    throw new LocalizedError('errors.capture.mimeParseFailed')
   }
   const mime = mimeMatch[1]
   const bstr = atob(arr[1])

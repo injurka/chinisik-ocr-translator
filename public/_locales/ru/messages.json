@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "Chinisik OCR Переводчик"
+  },
+  "captureErrorTitle": {
+    "message": "Ошибка захвата"
+  },
+  "captureErrorMessage": {
+    "message": "Не удалось начать захват на этой странице. Перезагрузите страницу или попробуйте другую."
+  }
+}

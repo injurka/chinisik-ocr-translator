@@ -1,16 +1,20 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MarkdownContent } from '../../../../shared/markdown-content'
+
+const props = defineProps<Props>()
+
+const emit = defineEmits(['close', 'submitQuestion'])
+
+const { t } = useI18n()
 
 interface Props {
   answerData: string | null
   isLoading: boolean
   error?: string | null
 }
-const props = defineProps<Props>()
-const emit = defineEmits(['close', 'submitQuestion'])
-
 const questionText = ref('')
 
 function closeModal() {
@@ -44,8 +48,8 @@ onUnmounted(() => {
       <Transition name="modal-content-appear" appear>
         <div class="chinisik-modal-content question-answer-modal">
           <div class="chinisik-modal-header">
-            <h3>Задать вопрос по тексту</h3>
-            <button title="Закрыть (Esc)" class="close-btn-header" @click="closeModal">
+            <h3>{{ t('content.qaModal.title') }}</h3>
+            <button :title="t('content.close')" class="close-btn-header" @click="closeModal">
               <Icon icon="mdi:close" />
             </button>
           </div>
@@ -53,7 +57,7 @@ onUnmounted(() => {
             <div class="question-input-area">
               <textarea
                 v-model="questionText"
-                placeholder="Введите ваш вопрос здесь..."
+                :placeholder="t('content.qaModal.placeholder')"
                 rows="3"
                 :disabled="props.isLoading"
               />
@@ -64,22 +68,22 @@ onUnmounted(() => {
               >
                 <Icon v-if="props.isLoading && !props.answerData && !props.error" icon="mdi:loading" class="animate-spin" />
                 <Icon v-else icon="mdi:send" />
-                Спросить
+                {{ t('content.qaModal.submit') }}
               </button>
             </div>
 
             <div v-if="props.isLoading && !props.answerData && !props.error" class="loader-container">
               <div class="loader" />
-              <p>Получение ответа...</p>
+              <p>{{ t('content.qaModal.loading') }}</p>
             </div>
             <div v-else-if="props.error" class="error-message">
-              <p><strong>Ошибка:</strong> {{ props.error }}</p>
+              <p><strong>{{ t('content.qaModal.errorPrefix') }}</strong> {{ props.error }}</p>
             </div>
             <div v-else-if="props.answerData" class="answer-display">
               <MarkdownContent :content="props.answerData" />
             </div>
             <div v-else-if="!props.isLoading && !questionText.trim() && !props.answerData && !props.error" class="placeholder-text">
-              <p>Ответ на ваш вопрос появится здесь.</p>
+              <p>{{ t('content.qaModal.emptyState') }}</p>
             </div>
           </div>
         </div>

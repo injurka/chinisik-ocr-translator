@@ -1,5 +1,5 @@
 import type { BaseProviderConfig } from './config'
-import type { TranslationResult } from '~/shared/types'
+import type { Language, TranslationResult } from '~/shared/types'
 
 export interface LlmPromptParams {
   user: string
@@ -17,7 +17,7 @@ export type QuestionForAnswerResult = string
 
 export interface TranslateRequestParams {
   imageDataUrl: string
-  targetLanguage?: string
+  targetLanguage: Language
 }
 
 export type TextToSpeechResult = Blob

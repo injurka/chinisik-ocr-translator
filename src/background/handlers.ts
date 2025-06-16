@@ -1,8 +1,7 @@
-// --- Импорты остаются те же ---
 import type { AbortRequestMessage, CaptureAreaMessage, GetLexicalAnalysisMessage, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
 import browser from 'webextension-polyfill'
 import { requestControllers } from '~/shared/api/request-controllers'
-import { translateMinimalPrompt } from '~/shared/constant'
+import { LocalizedError } from '~/shared/utils/error'
 import {
   performInlineTextTranslate,
   performLexicalAnalysisService,
@@ -17,7 +16,7 @@ import { blobToDataUrl, sendErrorToTab } from './utils'
 
 async function handleCaptureAndTranslate(request: CaptureAreaMessage, sender: MessageSender) {
   if (!sender.tab?.id) {
-    return { error: 'Запрос должен исходить от вкладки.' }
+    throw new LocalizedError('errors.messaging.noTabId')
   }
   const { tab: { id: tabId } } = sender
   const { area } = request
@@ -25,7 +24,7 @@ async function handleCaptureAndTranslate(request: CaptureAreaMessage, sender: Me
   try {
     const imageDataUrl = await browser.tabs.captureVisibleTab(undefined, { format: 'png' })
     if (!imageDataUrl) {
-      throw new Error('Не удалось захватить видимый контент вкладки.')
+      throw new LocalizedError('errors.capture.captureFailed')
     }
 
     const croppedImageDataUrl = await cropImage(imageDataUrl, area.x, area.y, area.width, area.height)
@@ -50,9 +49,9 @@ async function handleCaptureAndTranslate(request: CaptureAreaMessage, sender: Me
 }
 
 async function handleGetLexicalAnalysis(request: GetLexicalAnalysisMessage) {
-  if (!request.sentence) {
-    return { error: 'Предложение отсутствует для лексического анализа.' }
-  }
+  if (!request.sentence)
+    throw new LocalizedError('errors.messaging.missingSentence')
+
   try {
     const analysisResult = await performLexicalAnalysisService(request.sentence)
     return { data: analysisResult }
@@ -61,15 +60,14 @@ async function handleGetLexicalAnalysis(request: GetLexicalAnalysisMessage) {
     if (error instanceof Error && error.cause === 'AbortController')
       return
 
-    console.error('Ошибка при лексическом анализе:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
 async function handleTextToSpeech(request: TextToSpeechMessage) {
-  if (!request.text) {
-    return { error: 'Текст отсутствует для озвучивания.' }
-  }
+  if (!request.text)
+    throw new LocalizedError('errors.messaging.missingTextTts')
+
   try {
     const audioBlob = await performTextToSpeechService(request.text)
     const audioDataUrl = await blobToDataUrl(audioBlob)
@@ -79,15 +77,14 @@ async function handleTextToSpeech(request: TextToSpeechMessage) {
     if (error instanceof Error && error.cause === 'AbortController')
       return
 
-    console.error('Ошибка при озвучивании текста:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
 async function handleQuestionForAnswer(request: QuestionForAnswerMessage) {
-  if (!request.userPrompt || !request.systemPrompt) {
-    return { error: 'Отсутствует пользовательский или системный промпт.' }
-  }
+  if (!request.userPrompt || !request.systemPrompt)
+    throw new LocalizedError('errors.messaging.missingPrompt')
+
   try {
     const result = await performQuestionForAnswer(request.userPrompt, request.systemPrompt)
 
@@ -97,24 +94,22 @@ async function handleQuestionForAnswer(request: QuestionForAnswerMessage) {
     if (error instanceof Error && error.cause === 'AbortController')
       return
 
-    console.error('Ошибка при выполнении LLM запроса:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
 async function handleTranslateInlineText(request: TranslateInlineTextMessage) {
   if (!request.text) {
-    return { error: 'Текст отсутствует для инлайн-перевода.' }
+    throw new LocalizedError('errors.messaging.missingTextInline')
   }
   try {
-    const result = await performInlineTextTranslate(request.text, translateMinimalPrompt())
+    const result = await performInlineTextTranslate(request.text)
     return { data: result }
   }
   catch (error) {
     if (error instanceof Error && error.cause === 'AbortController')
       return
 
-    console.error('Ошибка при инлайн-переводе:', error)
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

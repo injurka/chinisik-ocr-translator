@@ -21,9 +21,15 @@ export interface ShowTranslationMessage extends BaseMessage {
   data: TranslationResultData
 }
 
+export interface LocalizedErrorPayload {
+  isLocalized: true
+  key: string
+  params?: Record<string, any>
+}
+
 export interface ShowErrorMessage extends BaseMessage {
   action: 'showError'
-  error: string
+  error: string | LocalizedErrorPayload
 }
 
 export interface GetLexicalAnalysisMessage extends BaseMessage {
@@ -53,8 +59,8 @@ export interface AbortRequestMessage extends BaseMessage {
   keys: (keyof ITranslationProvider)[]
 }
 
-export type RuntimeMessage =
-  | CaptureAreaMessage
+export type RuntimeMessage
+  = | CaptureAreaMessage
   | StartSelectionMessage
   | ShowTranslationMessage
   | ShowErrorMessage

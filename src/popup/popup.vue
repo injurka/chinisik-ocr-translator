@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { AllProviderConfigs, ChinisikConfig, CustomConfig, GeminiConfig } from '../shared/api/services/all/types/config'
-import type { Theme } from '../shared/types'
+import type { Language, Theme } from '../shared/types'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import browser from 'webextension-polyfill'
 import { CHINISIK_DEFAULT_API_URL } from '../shared/api/services/all/providers/chinisik/config'
 import { TranslationProvider } from '../shared/types'
@@ -22,54 +23,59 @@ interface ProviderUIDefinition {
   helpText?: string
 }
 
-const providerDefinitions: ProviderUIDefinition[] = [
+const { t, tm, locale } = useI18n()
+
+const computedProviderDefinitions = computed<ProviderUIDefinition[]>(() => [
   {
     id: TranslationProvider.Default,
-    name: 'Chinisik',
+    name: t('popup.providers.chinisik.name'),
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите Chinisik API ключ' },
-      { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: CHINISIK_DEFAULT_API_URL, isOptional: true },
+      { key: 'apiKey', label: t('popup.providers.chinisik.apiKeyLabel'), type: 'password', placeholder: t('popup.providers.chinisik.apiKeyPlaceholder') },
+      { key: 'apiUrl', label: t('popup.providers.chinisik.apiUrlLabel'), type: 'url', placeholder: CHINISIK_DEFAULT_API_URL, isOptional: true },
     ],
-    helpText: 'Бесплатный провайдер от Сhinisik.',
+    helpText: t('popup.providers.chinisik.helpText'),
   },
   {
     id: TranslationProvider.Gemini,
-    name: 'Google Gemini',
+    name: t('popup.providers.gemini.name'),
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите Gemini API ключ' },
-      { key: 'model', label: 'Model', type: 'text', placeholder: 'e.g., gemini-pro-vision', isOptional: true },
+      { key: 'apiKey', label: t('popup.providers.gemini.apiKeyLabel'), type: 'password', placeholder: t('popup.providers.gemini.apiKeyPlaceholder') },
+      { key: 'model', label: t('popup.providers.gemini.modelLabel'), type: 'text', placeholder: 'e.g., gemini-pro-vision', isOptional: true },
     ],
-    helpText: 'Использует Google\'s Gemini AI. Требуется ключ API.',
+    helpText: t('popup.providers.gemini.helpText'),
   },
   {
     id: TranslationProvider.Custom,
-    name: 'Custom (OpenAI)',
+    name: t('popup.providers.custom.name'),
     fields: [
-      { key: 'apiUrl', label: 'API URL', type: 'url', placeholder: 'https://api.example.com/v1' },
-      { key: 'model', label: 'Chat Model Name', type: 'text', placeholder: 'e.g., gpt-4o-mini' },
-      { key: 'ttsModel', label: 'TTS Model', type: 'text', placeholder: 'e.g., tts-1-hd' },
-      { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'Введите API ключ' },
+      { key: 'apiUrl', label: t('popup.providers.custom.apiUrlLabel'), type: 'url', placeholder: t('popup.providers.custom.apiUrlPlaceholder') },
+      { key: 'model', label: t('popup.providers.custom.modelLabel'), type: 'text', placeholder: t('popup.providers.custom.modelPlaceholder') },
+      { key: 'ttsModel', label: t('popup.providers.custom.ttsModelLabel'), type: 'text', placeholder: t('popup.providers.custom.ttsModelPlaceholder') },
+      { key: 'apiKey', label: t('popup.providers.custom.apiKeyLabel'), type: 'password', placeholder: t('popup.providers.custom.apiKeyPlaceholder') },
     ],
-    helpText: 'Используйте любую конечную точку API, совместимую с OpenAI. Если модель TTS не указана, будет использована модель по умолчанию.',
+    helpText: t('popup.providers.custom.helpText'),
   },
-]
+])
 
 const providersInDevelopment = [TranslationProvider.Gemini]
 
-// --- Реактивное состояние ---
 const selectedProvider = ref<TranslationProvider>(TranslationProvider.Default)
 const providerSettingsForm = reactive<AllProviderConfigs>({
   [TranslationProvider.Default]: { apiKey: '', apiUrl: CHINISIK_DEFAULT_API_URL },
   [TranslationProvider.Gemini]: { apiKey: '', model: 'gemini-pro-vision' },
   [TranslationProvider.Custom]: { apiKey: '', apiUrl: '', model: '', ttsModel: '' },
 })
+const selectedLanguage = ref<Language>('ru')
 const selectedTheme = ref<Theme>('light')
 const showKey = ref(false)
-const stats = reactive<{ today: number, total: number }>({ today: 0, total: 0 })
 const extensionVersion = ref(browser.runtime.getManifest().version)
 const isLoading = ref(true)
 
 const themes: Theme[] = ['light', 'dark', 'rainy']
+const languages: { code: Language, name: string }[] = [
+  { code: 'ru', name: 'Русский' },
+  { code: 'en', name: 'English' },
+]
 
 // --- Загрузка и сохранение настроек ---
 let debounceTimer: number
@@ -85,6 +91,7 @@ async function saveSettings() {
       selectedProvider: selectedProvider.value,
       providerSettings: JSON.parse(JSON.stringify(providerSettingsForm)),
       appTheme: selectedTheme.value,
+      targetLanguage: selectedLanguage.value,
     })
   }
   catch (error) {
@@ -99,10 +106,12 @@ async function loadSettings() {
       'selectedProvider',
       'providerSettings',
       'appTheme',
+      'targetLanguage',
     ]) as {
       selectedProvider?: TranslationProvider
       providerSettings?: AllProviderConfigs
       appTheme?: Theme
+      targetLanguage?: string
     }
 
     const defaultSelectedProvider = TranslationProvider.Default
@@ -128,6 +137,8 @@ async function loadSettings() {
       }
     }
 
+    selectedLanguage.value = (result.targetLanguage || 'ru') as Language
+    locale.value = selectedLanguage.value
     selectedTheme.value = themes.includes(result.appTheme!) ? result.appTheme! : defaultTheme
     applyTheme(selectedTheme.value)
   }
@@ -149,8 +160,12 @@ function toggleTheme() {
   selectedTheme.value = themes[nextIndex]
 }
 
+function highlightHotkey(text: string): string {
+  return text.replace(/Ctrl\+Shift\+S/g, '<kbd>Ctrl+Shift+S</kbd>')
+}
+
 const currentProviderUI = computed(() => {
-  return providerDefinitions.find(p => p.id === selectedProvider.value)
+  return computedProviderDefinitions.value.find(p => p.id === selectedProvider.value)
 })
 
 const currentFormData = computed(() => {
@@ -169,13 +184,18 @@ const currentThemeIcon = computed(() => {
   }
 })
 
-const currentThemeTitle = computed(() => {
+const currentThemeName = computed(() => {
   switch (selectedTheme.value) {
-    case 'light': return 'Светлая тема'
-    case 'dark': return 'Темная тема'
-    case 'rainy': return 'Тема "Дождь"'
-    default: return 'Светлая тема'
+    case 'light': return t('popup.tooltips.themeLight')
+    case 'dark': return t('popup.tooltips.themeDark')
+    case 'rainy': return t('popup.tooltips.themeRainy')
+    default: return t('popup.tooltips.themeLight')
   }
+})
+
+watch(selectedLanguage, (newLang) => {
+  locale.value = newLang
+  saveSettings()
 })
 
 watch(selectedProvider, () => {
@@ -205,10 +225,10 @@ onMounted(async () => {
   <div class="popup">
     <div class="header">
       <div class="title-block">
-        <h2>🔍 Chinisik OCR Переводчик</h2>
+        <h2>{{ t('popup.title') }}</h2>
         <button
           class="theme-toggle-btn"
-          :title="`Сменить тему (текущая: ${currentThemeTitle})`"
+          :title="t('popup.tooltips.changeTheme', { theme: currentThemeName })"
           @click="toggleTheme"
         >
           <Icon :icon="currentThemeIcon" />
@@ -217,13 +237,22 @@ onMounted(async () => {
     </div>
 
     <div v-if="isLoading" class="content loading-state">
-      <p>Загрузка настроек...</p>
+      <p>{{ t('popup.loadingText') }}</p>
     </div>
 
     <div v-else class="content">
+      <div class="settings-block">
+        <label for="language-select">{{ t('popup.languageLabel') }}</label>
+        <select id="language-select" v-model="selectedLanguage">
+          <option v-for="lang in languages" :key="lang.code" :value="lang.code">
+            {{ lang.name }}
+          </option>
+        </select>
+      </div>
+
       <div class="tabs">
         <button
-          v-for="providerDef in providerDefinitions"
+          v-for="providerDef in computedProviderDefinitions"
           :key="providerDef.id"
           class="tab-button"
           :class="{ active: selectedProvider === providerDef.id }"
@@ -238,7 +267,7 @@ onMounted(async () => {
         v-if="providersInDevelopment.includes(selectedProvider)"
         class="in-development-notice"
       >
-        <p>⚙️ В разработке</p>
+        <p>{{ t('popup.inDevelopment') }}</p>
       </div>
 
       <!-- Форма настроек (отображается, если провайдер не в разработке) -->
@@ -253,7 +282,7 @@ onMounted(async () => {
           class="form-group"
         >
           <label :for="`${currentProviderUI.id}-${field.key}`">
-            {{ field.label }}{{ field.isOptional ? ' (Необязательно)' : '' }}:
+            {{ field.label }}{{ field.isOptional ? ` ${t('popup.optionalLabel')}` : '' }}:
           </label>
           <div v-if="field.type === 'password'" class="input-group">
             <input
@@ -263,7 +292,7 @@ onMounted(async () => {
               :placeholder="field.placeholder"
               @input="saveSettingsDebounced"
             >
-            <button class="toggle-btn" :title="showKey ? 'Скрыть ключ' : 'Показать ключ'" @click="showKey = !showKey">
+            <button class="toggle-btn" :title="showKey ? t('popup.tooltips.hideKey') : t('popup.tooltips.showKey')" @click="showKey = !showKey">
               {{ showKey ? '👁️' : '🔒' }}
             </button>
           </div>
@@ -282,24 +311,17 @@ onMounted(async () => {
       </div>
 
       <div class="instructions">
-        <h3>Как использовать:</h3>
+        <h3>{{ t('popup.instructionsTitle') }}</h3>
         <ol>
-          <li>Нажмите <kbd>Ctrl+Shift+S</kbd> (или вашу комбинацию клавиш) для начала захвата области.</li>
-          <li>Кликните и перетащите, чтобы выделить область на экране.</li>
-          <li>Выбранное изображение будет автоматически отправлено на перевод с использованием выбранного провайдера.</li>
-          <li>Результат перевода отобразится на странице.</li>
+          <li v-for="(item, index) in tm('popup.instructions')" :key="index">
+            <span v-html="highlightHotkey(item)" />
+          </li>
         </ol>
-      </div>
-
-      <div v-if="stats.total > 0" class="stats">
-        <h3>Статистика:</h3>
-        <p>Переводов сегодня: {{ stats.today }}</p>
-        <p>Всего переводов: {{ stats.total }}</p>
       </div>
     </div>
 
     <div class="footer">
-      <small>Версия: {{ extensionVersion }}</small>
+      <small>{{ t('popup.version', { version: extensionVersion }) }}</small>
     </div>
   </div>
 </template>
@@ -560,5 +582,30 @@ kbd {
   color: var(--fg-tertiary-color);
   border-top: 1px solid var(--border-primary-color, #22263b);
   background-color: var(--bg-tertiary-color, #f3f3f3);
+}
+
+.settings-block {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: var(--bg-secondary-color);
+  border-radius: 6px;
+}
+
+.settings-block label {
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.settings-block select {
+  flex-grow: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-primary-color);
+  background-color: var(--bg-primary-color);
+  color: var(--fg-primary-color);
+  font-size: 0.9em;
 }
 </style>

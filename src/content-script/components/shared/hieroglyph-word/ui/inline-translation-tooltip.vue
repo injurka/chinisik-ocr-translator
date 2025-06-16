@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   position: { top: number, left: number, display: string }
@@ -12,6 +13,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{ requestTranslate: [void] }>()
+const { t } = useI18n()
 
 const positionStyles = computed(() => ({
   top: `${props.position.top}px`,
@@ -39,7 +41,7 @@ function onRequestTranslate() {
     <button
       v-else
       class="tooltip-translate-btn"
-      title="Перевести"
+      :title="t('content.actions.inlineTranslate')"
       @click.stop="onRequestTranslate"
     >
       <Icon icon="mdi:translate" height="20px" />

@@ -1,8 +1,9 @@
-import type { TranslationResult } from '../../../types'
+import type { Language, TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, CustomConfig, GeminiConfig } from './types/config'
 import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types/provider'
 import browser from 'webextension-polyfill'
-import { lexicalAnalysisPrompt } from '~/shared/constant'
+import { LocalizedError } from '~/shared/utils/error'
+import { lexicalAnalysisPrompt, translateMinimalPrompt } from '~/shared/utils/prompt'
 import { TranslationProvider } from '../../../types'
 import { CHINISIK_DEFAULT_API_URL } from './providers/chinisik/config'
 import { getTranslationProvider } from './utils/provider-factory'
@@ -38,33 +39,35 @@ export async function getProviderSettings(providerId: TranslationProvider): Prom
   }
 }
 
-//
-
 export async function performTranslate(imageDataUrl: string): Promise<TranslationResult> {
-  const { selectedProvider } = await browser.storage.sync.get({
+  const storageData = await browser.storage.sync.get({
     selectedProvider: TranslationProvider.Default,
+    targetLanguage: 'ru',
   })
-  const currentProviderId = selectedProvider as TranslationProvider
+  const currentProviderId = storageData.selectedProvider as TranslationProvider
+  const targetLanguage = storageData.targetLanguage as Language
+
   const providerConfig = await getProviderSettings(currentProviderId)
   const translator = getTranslationProvider(currentProviderId)
 
-  const requestParams: TranslateRequestParams = { imageDataUrl }
+  const requestParams: TranslateRequestParams = { imageDataUrl, targetLanguage }
 
   try {
     const result = await translator.translate(requestParams, providerConfig)
-
     return result
   }
   catch (error) {
     if (error instanceof Error && error.cause === 'AbortController')
       throw error
+    if (error instanceof LocalizedError)
+      throw error
 
     console.error(`Error during translation with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Translation failed with ${currentProviderId}: ${error.message}`)
+      throw new LocalizedError('errors.api.translationFailed', { provider: currentProviderId, message: error.message })
     }
 
-    throw new Error(`An unknown error occurred during translation with ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.generic', { context: `translation with ${currentProviderId}` })
   }
 }
 
@@ -77,7 +80,7 @@ export async function performLexicalAnalysisService(sentence: string): Promise<L
   const providerInstance = getTranslationProvider(currentProviderId)
 
   if (!providerInstance.analyzeLexically) {
-    throw new Error(`Lexical analysis is not supported by the current provider: ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.unsupportedFeature', { feature: 'Lexical analysis', provider: currentProviderId })
   }
 
   const requestParams: LexicalAnalysisRequestParams = {
@@ -87,18 +90,19 @@ export async function performLexicalAnalysisService(sentence: string): Promise<L
 
   try {
     const result = await providerInstance.analyzeLexically(requestParams, providerConfig)
-
     return result
   }
   catch (error) {
     if (error instanceof Error && error.cause === 'AbortController')
       throw error
+    if (error instanceof LocalizedError)
+      throw error
 
     console.error(`Error during lexical analysis with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Lexical analysis failed with ${currentProviderId}: ${error.message}`)
+      throw new LocalizedError('errors.api.lexicalAnalysisFailed', { provider: currentProviderId, message: error.message })
     }
-    throw new Error(`An unknown error occurred during lexical analysis with ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.generic', { context: `lexical analysis with ${currentProviderId}` })
   }
 }
 
@@ -111,29 +115,33 @@ export async function performTextToSpeechService(text: string): Promise<Blob> {
   const providerInstance = getTranslationProvider(currentProviderId)
 
   if (!providerInstance.textToSpeech) {
-    throw new Error(`Text-to-speech is not supported by the current provider: ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.unsupportedFeature', { feature: 'Text-to-speech', provider: currentProviderId })
   }
 
   const requestParams: TextToSpeechRequestParams = { text }
 
   try {
     const result = await providerInstance.textToSpeech(requestParams, providerConfig)
-
     return result
   }
   catch (error) {
     if (error instanceof Error && error.cause === 'AbortController')
       throw error
+    if (error instanceof LocalizedError)
+      throw error
 
     console.error(`Error during text-to-speech with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Text-to-speech failed with ${currentProviderId}: ${error.message}`)
+      throw new LocalizedError('errors.api.ttsFailed', { provider: currentProviderId, message: error.message })
     }
-    throw new Error(`An unknown error occurred during text-to-speech with ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.generic', { context: `text-to-speech with ${currentProviderId}` })
   }
 }
 
-export async function performInlineTextTranslate(userPrompt: string, systemPrompt: string): Promise<InlineTextTranslateResult> {
+export async function performInlineTextTranslate(text: string): Promise<InlineTextTranslateResult> {
+  const systemPrompt = translateMinimalPrompt()
+  const userPrompt = text
+
   const { selectedProvider } = await browser.storage.sync.get({
     selectedProvider: TranslationProvider.Default,
   })
@@ -142,7 +150,7 @@ export async function performInlineTextTranslate(userPrompt: string, systemPromp
   const providerInstance = getTranslationProvider(currentProviderId)
 
   if (!providerInstance.inlineTextTranslate) {
-    throw new Error(`Inline text translation is not supported by the current provider: ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.unsupportedFeature', { feature: 'Inline text translation', provider: currentProviderId })
   }
 
   try {
@@ -157,11 +165,16 @@ export async function performInlineTextTranslate(userPrompt: string, systemPromp
     return result
   }
   catch (error) {
+    if (error instanceof Error && error.cause === 'AbortController')
+      throw error
+    if (error instanceof LocalizedError)
+      throw error
+
     console.error(`Error during inline text translation with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Inline text translation failed with ${currentProviderId}: ${error.message}`)
+      throw new LocalizedError('errors.api.inlineTranslateFailed', { provider: currentProviderId, message: error.message })
     }
-    throw new Error(`An unknown error occurred during inline text translation with ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.generic', { context: `inline text translation with ${currentProviderId}` })
   }
 }
 
@@ -174,7 +187,7 @@ export async function performQuestionForAnswer(userPrompt: string, systemPrompt:
   const providerInstance = getTranslationProvider(currentProviderId)
 
   if (!providerInstance.questionForAnswer) {
-    throw new Error(`Question/Answer feature is not supported by the current provider: ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.unsupportedFeature', { feature: 'Question/Answer', provider: currentProviderId })
   }
 
   const requestParams: QuestionForAnswerRequestParams = {
@@ -184,17 +197,18 @@ export async function performQuestionForAnswer(userPrompt: string, systemPrompt:
 
   try {
     const result = await providerInstance.questionForAnswer(requestParams, providerConfig)
-
     return result
   }
   catch (error) {
     if (error instanceof Error && error.cause === 'AbortController')
       throw error
+    if (error instanceof LocalizedError)
+      throw error
 
     console.error(`Error during question/answer with ${currentProviderId}:`, error)
     if (error instanceof Error) {
-      throw new TypeError(`Question/Answer failed with ${currentProviderId}: ${error.message}`)
+      throw new LocalizedError('errors.api.qaFailed', { provider: currentProviderId, message: error.message })
     }
-    throw new Error(`An unknown error occurred during question/answer with ${currentProviderId}.`)
+    throw new LocalizedError('errors.api.generic', { context: `question/answer with ${currentProviderId}` })
   }
 }

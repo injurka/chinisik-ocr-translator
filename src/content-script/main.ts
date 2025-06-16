@@ -1,9 +1,17 @@
+import type { Language } from '~/shared/types'
 import { createApp, h } from 'vue'
+import browser from 'webextension-polyfill'
+import i18n from '../i18n'
 import Overlay from './overlay.vue'
 
 const MOUNT_EL_ID = 'chinisik-ocr-translator-overlay-root'
 
-function init() {
+async function init() {
+  const settings = await browser.storage.sync.get('targetLanguage')
+
+  if (settings.targetLanguage)
+    i18n.global.locale.value = settings.targetLanguage as Language
+
   const existingEl = document.getElementById(MOUNT_EL_ID)
   if (existingEl) {
     return
@@ -16,6 +24,7 @@ function init() {
   const app = createApp({
     render: () => h(Overlay),
   })
+  app.use(i18n)
   app.mount(mountEl)
 }
 

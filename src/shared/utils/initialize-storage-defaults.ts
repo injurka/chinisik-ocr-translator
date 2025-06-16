@@ -23,6 +23,7 @@ export async function initializeStorageDefaults() {
       },
     },
     appTheme: 'light',
+    targetLanguage: 'ru',
     [STORAGE_KEY_CONTROLS]: {
       displayStyle: 'standard',
       displayPosition: 'center',
@@ -37,6 +38,9 @@ export async function initializeStorageDefaults() {
 
   if (stored.appTheme === undefined)
     toSet.appTheme = defaults.appTheme
+
+  if (stored.targetLanguage === undefined)
+    toSet.targetLanguage = defaults.targetLanguage
 
   if (stored[STORAGE_KEY_CONTROLS] === undefined)
     toSet[STORAGE_KEY_CONTROLS] = defaults[STORAGE_KEY_CONTROLS]

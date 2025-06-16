@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "Chinisik OCR Translator"
+  },
+  "captureErrorTitle": {
+    "message": "Capture Error"
+  },
+  "captureErrorMessage": {
+    "message": "Failed to start capture on this page. Please reload the page or try another one."
+  }
+}

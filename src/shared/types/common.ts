@@ -1,4 +1,5 @@
 type Theme = 'light' | 'dark' | 'rainy'
+type Language = 'ru' | 'en'
 
 interface AreaToCapture {
   x: number
@@ -25,6 +26,7 @@ interface TranslationResultData extends TranslationResult {
 
 export {
   AreaToCapture,
+  Language,
   Theme,
   TranslationProvider,
   TranslationResult,

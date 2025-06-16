@@ -1,9 +1,9 @@
-// --- Импорты остаются те же ---
 import type { BaseProviderConfig, ChinisikConfig } from '../../types/config'
 import type { InlineTextTranslateResult, ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types/provider'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
 import { requestControllers } from '~/shared/api/request-controllers'
+import { LocalizedError } from '~/shared/utils/error'
 import { dataURLtoBlob } from '../../../../../utils/helpers'
 import { CHINISIK_DEFAULT_API_URL } from './config'
 
@@ -18,9 +18,8 @@ export class ChinisikProvider implements ITranslationProvider {
     if (error instanceof FetchError) {
       const status = error.response?.status || 'N/A'
       const statusText = error.response?.statusText || 'Unknown Error'
-      let errorMessage = `Chinisik API ${context} error: ${status} ${statusText}`
-
       const responseData = error.data ?? error.response?._data
+
       if (responseData) {
         let details = ''
         if (typeof responseData === 'object' && responseData !== null) {
@@ -32,26 +31,22 @@ export class ChinisikProvider implements ITranslationProvider {
         }
 
         if (details) {
-          errorMessage += ` - ${details}`
+          throw new LocalizedError('errors.api.chinisikContextDetails', { context, status, statusText, details })
         }
-        console.error(`Chinisik API ${context} Error Full Response Data:`, responseData)
       }
-      throw new Error(errorMessage)
+      throw new LocalizedError('errors.api.chinisikContext', { context, status, statusText })
     }
 
     if (error instanceof Error) {
-      error.message = `Chinisik API ${context} failed: ${error.message}`
-      throw error
+      throw new LocalizedError('errors.api.chinisikFailed', { context, message: error.message })
     }
-
-    console.error(`Unknown API error in ChinisikProvider (${context}):`, error)
-    throw new Error(`Unknown error during Chinisik API ${context} request`)
+    throw new LocalizedError('errors.api.generic', { context })
   }
 
   /**
    * Обертка для выполнения запросов к API с автоматической обработкой ошибок.
    * @param requestFn - Функция, выполняющая сам запрос и возвращающая Promise.
-   * @param context - Контекст для логирования и сообщений об ошибках.
+   * @param key - Контекст для логирования и сообщений об ошибках.
    */
   private async requestWrapper<T>(
     requestFn: (signal: AbortSignal) => Promise<T>,
@@ -109,11 +104,12 @@ export class ChinisikProvider implements ITranslationProvider {
   ): Promise<TranslationResult> {
     return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const { imageDataUrl } = params
+      const { imageDataUrl, targetLanguage } = params
 
       const blob = dataURLtoBlob(imageDataUrl)
       const formData = new FormData()
       formData.append('image', blob, 'screenshot.png')
+      formData.append('targetLanguage', targetLanguage)
 
       const data = await $fetch<TranslationResult>(`${config.apiUrl}/llvm/image-to-text-translate`, {
         method: 'POST',
@@ -123,7 +119,7 @@ export class ChinisikProvider implements ITranslationProvider {
       })
 
       if (!data) {
-        throw new Error('Could not extract translation from API response.')
+        throw new LocalizedError('errors.api.noContent')
       }
       return data
     }, 'translate')
@@ -138,7 +134,7 @@ export class ChinisikProvider implements ITranslationProvider {
       const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
 
       if (!data) {
-        throw new Error('Could not extract lexical analysis from API response.')
+        throw new LocalizedError('errors.api.noContent')
       }
       return data
     }, 'analyzeLexically')
@@ -170,7 +166,7 @@ export class ChinisikProvider implements ITranslationProvider {
       })
 
       if (!(audioBlob instanceof Blob)) {
-        throw new TypeError('API did not return a valid audio Blob.')
+        throw new LocalizedError('errors.api.invalidAudioBlob')
       }
       return audioBlob
     }, 'textToSpeech')
@@ -185,7 +181,7 @@ export class ChinisikProvider implements ITranslationProvider {
       const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
 
       if (!data) {
-        throw new Error('Could not extract lexical analysis from API response.')
+        throw new LocalizedError('errors.api.noContent')
       }
       return data
     }, 'inlineTextTranslate')
@@ -200,7 +196,7 @@ export class ChinisikProvider implements ITranslationProvider {
       const data = await this.rawLlm<QuestionForAnswerResult>(config, params, signal)
 
       if (!data) {
-        throw new Error('Could not extract answer from API response.')
+        throw new LocalizedError('errors.api.noContent')
       }
       return data
     }, 'questionForAnswer')

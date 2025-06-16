@@ -18,8 +18,8 @@ export async function handleCaptureAreaCommand() {
       browser.notifications.create({
         type: 'basic',
         iconUrl: browser.runtime.getURL('icon/128.png'),
-        title: 'Ошибка захвата',
-        message: 'Не удалось начать захват на этой странице. Перезагрузите страницу или попробуйте другую.',
+        title: browser.i18n.getMessage('captureErrorTitle'),
+        message: browser.i18n.getMessage('captureErrorMessage'),
       })
     }
   }

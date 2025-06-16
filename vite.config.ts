@@ -16,13 +16,13 @@ export default defineConfig({
     outDir: root(`dist/${targetBrowser}`),
     emptyOutDir: true,
   },
+  publicDir: 'public',
   plugins: [
     vue(),
     vueJsx({
       optimize: true,
       enableObjectSlots: true,
     }),
-    // @ts-expect-error dts
     browserExtension({
       manifest: 'src/manifest.json',
       browser: targetBrowser,

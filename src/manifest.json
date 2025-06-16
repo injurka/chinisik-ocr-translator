@@ -2,8 +2,9 @@
   "{{chrome}}.manifest_version": 3,
   "{{firefox}}.manifest_version": 2,
   "name": "Chinisik OCR Translator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Capture screen area and translate with AI",
+  "default_locale": "ru",
   "icons": {
     "16": "icon/16.png",
     "48": "icon/48.png",

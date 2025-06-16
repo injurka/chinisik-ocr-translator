@@ -2,11 +2,16 @@
 import type { DisplayPositionValue } from '../../translate-result/ui/sections/control-menu.vue'
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   displayPosition: DisplayPositionValue
 }>()
+
 const emit = defineEmits(['close'])
+
+const { t } = useI18n()
+
 function close() {
   emit('close')
 }
@@ -29,8 +34,8 @@ const positionClasses = computed(() => {
   <div :class="positionClasses">
     <div class="chinisik-popup translate-loading-popup">
       <div class="chinisik-popup-header">
-        <span>Перевод...</span>
-        <button title="Отменить (Esc)" class="close-btn-header" @click="close">
+        <span>{{ t('content.loading') }}</span>
+        <button :title="t('content.cancel')" class="close-btn-header" @click="close">
           <Icon icon="mdi:close" />
         </button>
       </div>

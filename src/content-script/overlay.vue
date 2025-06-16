@@ -1,12 +1,15 @@
 <script lang="ts" setup>
-import type { AreaToCapture, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
+import type { AreaToCapture, Language, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
 import type { ControlValues } from './components/modules/translate-result/ui/sections/control-menu.vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import browser from 'webextension-polyfill'
 import { ALL_KEYS, STORAGE_KEY_CONTROLS, STORAGE_KEY_THEME } from '~/shared/constant'
 import { Selection } from './components/modules/selection'
 import { TranslateLoading } from './components/modules/translate-loading'
 import { TranslateResult } from './components/modules/translate-result'
+
+const { t, locale } = useI18n()
 
 type OverlayState = 'IDLE' | 'SELECTING' | 'LOADING' | 'RESULT' | 'ERROR'
 
@@ -80,7 +83,19 @@ function messageListener(message: RuntimeMessage) {
     currentState.value = 'RESULT'
   }
   else if (message.action === 'showError') {
-    errorMessage.value = message.error
+    const errorData = message.error
+
+    if (typeof errorData === 'object' && 'isLocalized' in errorData && errorData.isLocalized) {
+      errorMessage.value = t(errorData.key, errorData.params || {})
+    }
+    else if (typeof errorData === 'string') {
+      errorMessage.value = errorData
+    }
+    else {
+      console.warn('Received an unexpected error format:', errorData)
+      errorMessage.value = t('errors.api.generic', { context: 'unexpected format' })
+    }
+
     currentState.value = 'ERROR'
   }
 }
@@ -95,7 +110,8 @@ async function handleSelection(area: AreaToCapture) {
   }
   catch (error) {
     console.error('Overlay: Error sending captureAndTranslate message to background:', error)
-    errorMessage.value = `Ошибка отправки запроса: ${error instanceof Error ? error.message : String(error)}`
+    const message = error instanceof Error ? error.message : String(error)
+    errorMessage.value = t('content.requestError', { message })
     currentState.value = 'ERROR'
   }
 }
@@ -113,6 +129,7 @@ function handleKeyDown(event: KeyboardEvent) {
     }
   }
 }
+
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme
 }
@@ -132,11 +149,19 @@ async function loadAndApplyTheme() {
 }
 
 function storageChangeListener(changes: Record<string, browser.Storage.StorageChange>, areaName: string) {
-  if (areaName === 'sync' && changes[STORAGE_KEY_THEME]) {
-    const newTheme = changes[STORAGE_KEY_THEME].newValue as Theme
-    if (newTheme && newTheme !== currentTheme.value) {
-      currentTheme.value = newTheme
-      applyTheme(newTheme)
+  if (areaName === 'sync') {
+    if (changes[STORAGE_KEY_THEME]) {
+      const newTheme = changes[STORAGE_KEY_THEME].newValue as Theme
+      if (newTheme && newTheme !== currentTheme.value) {
+        currentTheme.value = newTheme
+        applyTheme(newTheme)
+      }
+    }
+    if (changes.targetLanguage) {
+      const newLang = changes.targetLanguage.newValue
+      if (newLang && newLang !== locale.value) {
+        locale.value = newLang as Language
+      }
     }
   }
 }
@@ -180,8 +205,8 @@ onUnmounted(() => {
       <div v-else-if="currentState === 'ERROR' && errorMessage" key="error" class="chinisik-popup-wrapper">
         <div class="chinisik-popup chinisik-error-popup">
           <div class="chinisik-popup-header">
-            <span>Ошибка перевода</span>
-            <button title="Закрыть (Esc)" class="close-btn-header" @click="closeComponentAndResetState">
+            <span>{{ t('content.translationError') }}</span>
+            <button :title="t('content.close')" class="close-btn-header" @click="closeComponentAndResetState">
               ×
             </button>
           </div>

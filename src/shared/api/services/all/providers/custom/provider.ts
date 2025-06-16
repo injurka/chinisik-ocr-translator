@@ -3,6 +3,8 @@ import type { ITranslationProvider, LlmPromptParams, TextToSpeechRequestParams, 
 import type { TranslationResult } from '~/shared/types'
 import OpenAI from 'openai'
 import { requestControllers } from '~/shared/api/request-controllers'
+import { LocalizedError } from '~/shared/utils/error'
+import { getOcrAndTranslatePrompt } from '~/shared/utils/prompt'
 
 /**
  * CustomProvider - это универсальный провайдер для любых
@@ -15,7 +17,7 @@ export class CustomProvider implements ITranslationProvider {
    */
   private createOpenAIClient(config: CustomConfig, signal: AbortSignal): OpenAI {
     if (!config.apiUrl || !config.model)
-      throw new Error('Custom Provider requires API URL and a model name.')
+      throw new LocalizedError('errors.api.customProviderConfig')
 
     return new OpenAI({
       apiKey: config.apiKey,
@@ -50,25 +52,28 @@ export class CustomProvider implements ITranslationProvider {
         throw abortError
       }
       if (error instanceof Error) {
-        throw new TypeError(`Custom Provider Error (${key}): ${error.message}`)
+        throw new LocalizedError('errors.api.customProviderError', { key, message: error.message })
       }
-      throw new Error(`Unknown error in Custom Provider during ${key} request`)
+      throw new LocalizedError('errors.api.generic', { context: `Custom Provider during ${key}` })
     }
   }
 
   public translate(params: TranslateRequestParams, baseConfig: BaseProviderConfig): Promise<TranslationResult> {
     return this.requestWrapper(async (openai, model) => {
-      const { imageDataUrl } = params
+      const { imageDataUrl, targetLanguage } = params
+
+      // 1. Генерируем промпты с помощью новой функции
+      const { system, user } = getOcrAndTranslatePrompt({
+        user: { imageDataUrl },
+        targetLanguage,
+      })
+
+      // 2. Отправляем запрос в API
       const response = await openai.chat.completions.create({
         model,
         messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Recognize and translate the text from this image into Russian. Provide the result as a JSON object with three fields: "source" (the recognized Chinese text), "translate" (the Russian translation), and "transcription" (the pinyin transcription of the source text). Return only JSON.' },
-              { type: 'image_url', image_url: { url: imageDataUrl } },
-            ],
-          },
+          { role: 'system', content: system },
+          { role: 'user', content: user },
         ],
         max_tokens: 1024,
         response_format: { type: 'json_object' },
@@ -76,7 +81,7 @@ export class CustomProvider implements ITranslationProvider {
 
       const content = response.choices[0].message.content
       if (!content)
-        throw new Error('API returned no content.')
+        throw new LocalizedError('errors.api.noContent')
 
       return JSON.parse(content) as TranslationResult
     }, baseConfig, 'translate')
@@ -94,7 +99,8 @@ export class CustomProvider implements ITranslationProvider {
       })
       const content = response.choices[0].message.content
       if (!content)
-        throw new Error('API returned no content.')
+        throw new LocalizedError('errors.api.noContent')
+
       return content
     }, baseConfig, key)
   }

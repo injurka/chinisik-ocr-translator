@@ -1,3 +1,3 @@
 export * from './controllers-keys'
-export * from './prompt'
+export * from './language-map'
 export * from './store-key'

@@ -1,5 +1,6 @@
 import type { ShowErrorMessage } from '~/shared/types'
 import browser from 'webextension-polyfill'
+import { LocalizedError } from '~/shared/utils/error'
 
 /**
  * Получает активную и текущую вкладку.
@@ -17,12 +18,24 @@ export async function getActiveTab(): Promise<browser.Tabs.Tab | undefined> {
  * @param context Контекст, в котором произошла ошибка (для логирования).
  */
 export function sendErrorToTab(tabId: number, error: unknown, context: string): void {
-  const errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка.'
   console.error(`Ошибка в [${context}]:`, error)
+
+  let errorPayload: ShowErrorMessage['error']
+
+  if (error instanceof LocalizedError) {
+    errorPayload = {
+      isLocalized: true,
+      key: error.key,
+      params: error.params,
+    }
+  }
+  else {
+    errorPayload = error instanceof Error ? error.message : 'Произошла неизвестная ошибка.'
+  }
 
   const errorMsg: ShowErrorMessage = {
     action: 'showError',
-    error: errorMessage,
+    error: errorPayload,
   }
   browser.tabs.sendMessage(tabId, errorMsg)
 }
@@ -40,12 +53,12 @@ export function blobToDataUrl(blob: Blob): Promise<string> {
         resolve(reader.result)
       }
       else {
-        reject(new Error('Не удалось прочитать Blob как Data URL.'))
+        reject(new LocalizedError('errors.capture.readBlobFailed'))
       }
     }
     reader.onerror = (error) => {
       console.error('Ошибка FileReader:', error)
-      reject(new Error('FileReader не смог прочитать Blob.'))
+      reject(new LocalizedError('errors.capture.fileReaderFailed'))
     }
     reader.readAsDataURL(blob)
   })

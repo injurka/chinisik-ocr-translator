@@ -1,6 +1,15 @@
 <script lang="ts" setup>
 import type { HieroglyphWordVariant } from '~/content-script/components/shared/hieroglyph-word'
 import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n'
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: ControlValues): void
+}>()
+
+const { t } = useI18n()
 
 export type DisplayPositionValue = 'center' | 'bottom-left' | 'bottom-right'
 export type DisplayStyleValue = HieroglyphWordVariant
@@ -14,11 +23,6 @@ interface Props {
   modelValue: ControlValues
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: ControlValues): void
-}>()
-
 function updateDisplayPosition(position: DisplayPositionValue) {
   emit('update:modelValue', { ...props.modelValue, displayPosition: position })
 }
@@ -31,25 +35,25 @@ function updateDisplayStyle(style: DisplayStyleValue) {
 <template>
   <div class="control-menu-content">
     <div class="control-group">
-      <label class="control-label">Стиль отображения:</label>
+      <label class="control-label">{{ t('content.controlMenu.displayStyle') }}</label>
       <div class="button-group">
         <button
           :class="{ active: modelValue.displayStyle === 'compact' }"
-          title="Компактный"
+          :title="t('content.controlMenu.displayStyleCompact')"
           @click="updateDisplayStyle('compact')"
         >
           <Icon icon="mdi:view-compact-outline" />
         </button>
         <button
           :class="{ active: modelValue.displayStyle === 'standard' }"
-          title="Стандартный"
+          :title="t('content.controlMenu.displayStyleStandard')"
           @click="updateDisplayStyle('standard')"
         >
           <Icon icon="mdi:view-dashboard-outline" />
         </button>
         <button
           :class="{ active: modelValue.displayStyle === 'expanded' }"
-          title="Расширенный"
+          :title="t('content.controlMenu.displayStyleExpanded')"
           @click="updateDisplayStyle('expanded')"
         >
           <Icon icon="mdi:view-sequential-outline" />
@@ -58,25 +62,25 @@ function updateDisplayStyle(style: DisplayStyleValue) {
     </div>
 
     <div class="control-group">
-      <label class="control-label">Позиция на экране:</label>
+      <label class="control-label">{{ t('content.controlMenu.position') }}</label>
       <div class="button-group">
         <button
           :class="{ active: modelValue.displayPosition === 'bottom-left' }"
-          title="Влево снизу"
+          :title="t('content.controlMenu.positionBottomLeft')"
           @click="updateDisplayPosition('bottom-left')"
         >
           <Icon icon="mdi:dock-left" />
         </button>
         <button
           :class="{ active: modelValue.displayPosition === 'center' }"
-          title="По центру снизу"
+          :title="t('content.controlMenu.positionCenter')"
           @click="updateDisplayPosition('center')"
         >
           <Icon icon="mdi:dock-bottom" />
         </button>
         <button
           :class="{ active: modelValue.displayPosition === 'bottom-right' }"
-          title="Вправо снизу"
+          :title="t('content.controlMenu.positionBottomRight')"
           @click="updateDisplayPosition('bottom-right')"
         >
           <Icon icon="mdi:dock-right" />

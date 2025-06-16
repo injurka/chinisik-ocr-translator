@@ -1,0 +1,136 @@
+{
+  "popup": {
+    "title": "🔍 Chinisik OCR Translator",
+    "loadingText": "Loading settings...",
+    "languageLabel": "Translation language:",
+    "inDevelopment": "⚙️ In Development",
+    "optionalLabel": "(Optional)",
+    "stats": {
+      "title": "Statistics:",
+      "today": "Translations today: {count}",
+      "total": "Total translations: {count}"
+    },
+    "tooltips": {
+      "changeTheme": "Change theme (current: {theme})",
+      "themeLight": "Light theme",
+      "themeDark": "Dark theme",
+      "themeRainy": "Rainy theme",
+      "showKey": "Show key",
+      "hideKey": "Hide key"
+    },
+    "providers": {
+      "chinisik": {
+        "name": "Chinisik",
+        "apiKeyLabel": "API Key",
+        "apiKeyPlaceholder": "Enter Chinisik API key",
+        "apiUrlLabel": "API URL",
+        "helpText": "Free provider from Chinisik."
+      },
+      "gemini": {
+        "name": "Google Gemini",
+        "apiKeyLabel": "API Key",
+        "apiKeyPlaceholder": "Enter Gemini API key",
+        "modelLabel": "Model",
+        "helpText": "Uses Google's Gemini AI. Requires an API key."
+      },
+      "custom": {
+        "name": "Custom (OpenAI)",
+        "apiUrlLabel": "API URL",
+        "apiUrlPlaceholder": "https://api.example.com/v1",
+        "modelLabel": "Chat Model Name",
+        "modelPlaceholder": "e.g., gpt-4o-mini",
+        "ttsModelLabel": "TTS Model",
+        "ttsModelPlaceholder": "e.g., tts-1-hd",
+        "apiKeyLabel": "API Key",
+        "apiKeyPlaceholder": "Enter API key",
+        "helpText": "Use any OpenAI-compatible API endpoint. If TTS model is not specified, a default will be used."
+      }
+    },
+    "instructionsTitle": "How to use:",
+    "instructions": [
+      "Press Ctrl+Shift+S (or your custom shortcut) to start capturing an area.",
+      "Click and drag to select an area on the screen.",
+      "The selected image will be automatically sent for translation.",
+      "The translation result will be displayed on the page."
+    ],
+    "version": "Version: {version}"
+  },
+  "content": {
+    "loading": "Translating...",
+    "cancel": "Cancel (Esc)",
+    "close": "Close (Esc)",
+    "translationError": "Translation Error",
+    "unrecognizedText": "Failed to recognize text",
+    "requestError": "Error sending request: {message}",
+    "audioPlaybackError": "Audio playback error.",
+    "speechSynthesisError": "Speech synthesis error.",
+    "audioFetchError": "Failed to retrieve audio file.",
+    "qaRequestError": "An unknown error occurred while processing the question.",
+    "lexicalAnalysisError": "An unknown error occurred.",
+    "actions": {
+      "askQuestion": "Ask a question about the text",
+      "lexicalAnalysis": "Lexical analysis",
+      "textToSpeech": "Read recognized text aloud",
+      "displaySettings": "Display settings",
+      "inlineTranslate": "Translate"
+    },
+    "controlMenu": {
+      "displayStyle": "Display style:",
+      "displayStyleCompact": "Compact",
+      "displayStyleStandard": "Standard",
+      "displayStyleExpanded": "Expanded",
+      "position": "Position on screen:",
+      "positionBottomLeft": "Bottom left",
+      "positionCenter": "Bottom center",
+      "positionBottomRight": "Bottom right"
+    },
+    "lexicalAnalysisModal": {
+      "loading": "Loading analysis...",
+      "noData": "No data to display or an error occurred."
+    },
+    "qaModal": {
+      "title": "Ask a question about the text",
+      "placeholder": "Enter your question here...",
+      "submit": "Ask",
+      "loading": "Getting the answer...",
+      "errorPrefix": "Error:",
+      "emptyState": "The answer to your question will appear here."
+    }
+  },
+  "errors": {
+    "capture": {
+      "noActiveTab": "No active tab found to start selection.",
+      "captureFailed": "Failed to capture visible tab content.",
+      "contextFailed": "Could not get 2D context from OffscreenCanvas.",
+      "blobConversionFailed": "Failed to convert OffscreenCanvas to Blob.",
+      "readBlobFailed": "Failed to read blob as Data URL.",
+      "fileReaderFailed": "FileReader failed to read blob.",
+      "genericCrop": "Error while cropping the image.",
+      "invalidDataUrl": "Invalid data URL format for blob conversion.",
+      "mimeParseFailed": "Could not parse MIME type from data URL."
+    },
+    "api": {
+      "generic": "Unknown error during {context} API request",
+      "chinisikContext": "Chinisik API {context} error: {status} {statusText}",
+      "chinisikContextDetails": "Chinisik API {context} error: {status} {statusText} - {details}",
+      "chinisikFailed": "Chinisik API {context} failed: {message}",
+      "noContent": "API returned no content.",
+      "invalidAudioBlob": "API did not return a valid audio Blob.",
+      "customProviderConfig": "Custom Provider requires API URL and a model name.",
+      "customProviderError": "Custom Provider Error ({key}): {message}",
+      "translationFailed": "Translation failed with {provider}: {message}",
+      "lexicalAnalysisFailed": "Lexical analysis failed with {provider}: {message}",
+      "ttsFailed": "Text-to-speech failed with {provider}: {message}",
+      "inlineTranslateFailed": "Inline translation failed with {provider}: {message}",
+      "qaFailed": "Question/Answer failed with {provider}: {message}",
+      "unsupportedFeature": "{feature} is not supported by the current provider: {provider}."
+    },
+    "messaging": {
+      "noTabId": "Request must originate from a tab.",
+      "missingSentence": "Sentence is missing for lexical analysis.",
+      "missingTextTts": "Text is missing for text-to-speech.",
+      "missingPrompt": "User or system prompt is missing.",
+      "missingTextInline": "Text is missing for inline translation."
+    }
+  }
+}

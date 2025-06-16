@@ -1,16 +1,20 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
 import { onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MarkdownContent } from '../../../../shared/markdown-content'
+
+const props = defineProps<Props>()
+
+const emit = defineEmits(['close'])
+
+const { t } = useI18n()
 
 interface Props {
   source: string
   data: string | null
   isLoading: boolean
 }
-const props = defineProps<Props>()
-const emit = defineEmits(['close'])
-
 function closeModal() {
   emit('close')
 }
@@ -37,21 +41,21 @@ onUnmounted(() => {
         <div class="chinisik-modal-content lexical-analysis-modal">
           <div class="chinisik-modal-header">
             <h3>{{ source }}</h3>
-            <button title="Закрыть (Esc)" class="close-btn-header" @click="closeModal">
+            <button :title="t('content.close')" class="close-btn-header" @click="closeModal">
               <Icon icon="mdi:close" />
             </button>
           </div>
           <div class="chinisik-modal-body">
             <div v-if="props.isLoading" class="loader-container">
               <div class="loader" />
-              <p>Загрузка анализа...</p>
+              <p>{{ t('content.lexicalAnalysisModal.loading') }}</p>
             </div>
 
             <div v-else-if="props.data">
               <MarkdownContent :content="props.data" />
             </div>
             <div v-else>
-              <p>Нет данных для отображения или произошла ошибка.</p>
+              <p>{{ t('content.lexicalAnalysisModal.noData') }}</p>
             </div>
           </div>
         </div>

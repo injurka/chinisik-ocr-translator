@@ -4,21 +4,25 @@ import type { ControlValues } from './sections/control-menu.vue'
 import type { LexicalAnalysisResult } from '~/shared/api/services/all/types/provider'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import browser from 'webextension-polyfill'
-import { questionPrompt } from '~/shared/constant'
 import { dataURLtoBlob } from '~/shared/utils/helpers'
+import { questionPrompt } from '~/shared/utils/prompt'
 import { HieroglyphWord } from '../../../shared/hieroglyph-word'
 import ControlMenu from './sections/control-menu.vue'
 import LexicalAnalysisModal from './sections/lexical-analysis-modal.vue'
 import QuestionAnswerModal from './sections/question-answer-modal.vue'
 
+const props = defineProps<Props>()
+
+const emit = defineEmits<{ close: [void], sound: [source: string] }>()
+
+const { t } = useI18n()
+
 interface Props {
   data: TranslationDataType
   capturedImagePreview?: string | null
 }
-const props = defineProps<Props>()
-const emit = defineEmits<{ close: [void], sound: [source: string] }>()
-
 const controls = defineModel<ControlValues>('controls', {
   required: true,
 })
@@ -80,7 +84,7 @@ async function handleSubmitQuestion(question: string) {
   }
   catch (error: any) {
     console.error('Ошибка при запросе ответа на вопрос:', error)
-    questionAnswerError.value = error.message || 'Произошла неизвестная ошибка при обработке вопроса.'
+    questionAnswerError.value = error.message || t('content.qaRequestError')
     questionAnswerData.value = null
   }
   finally {
@@ -120,22 +124,22 @@ async function soundSource() {
       }
       audioPlayer.value.onerror = (e) => {
         console.error('Error playing audio:', e)
-        soundError.value = 'Ошибка воспроизведения аудио.'
+        soundError.value = t('content.audioPlaybackError')
         URL.revokeObjectURL(objectUrl)
       }
     }
     else if (response && typeof response === 'object' && 'error' in response) {
       console.error('Text-to-speech API error:', response.error)
-      soundError.value = response.error || 'Ошибка синтеза речи.'
+      soundError.value = response.error || t('content.speechSynthesisError')
     }
     else {
       console.error('Failed to retrieve audio or invalid format received.')
-      soundError.value = 'Не удалось получить аудиофайл.'
+      soundError.value = t('content.audioFetchError')
     }
   }
   catch (error: any) {
     console.error('Error fetching or playing sound:', error)
-    soundError.value = error.message || 'Произошла ошибка при запросе озвучивания.'
+    soundError.value = error.message || t('content.qaRequestError')
   }
   finally {
     isSoundLoading.value = false
@@ -164,7 +168,7 @@ async function handleLexicalAnalysis() {
   }
   catch (error: any) {
     console.error('Ошибка при запросе лексического анализа:', error)
-    lexicalAnalysisError.value = error.message || 'Произошла неизвестная ошибка.'
+    lexicalAnalysisError.value = error.message || t('content.lexicalAnalysisError')
     isLexicalAnalysisModalVisible.value = true
   }
   finally {
@@ -231,7 +235,7 @@ const positionClasses = computed(() => {
   <div :class="positionClasses">
     <div class="actions-bar">
       <button
-        title="Задать вопрос по тексту"
+        :title="t('content.actions.askQuestion')"
         class="icon-button question-btn"
         :disabled="!props.data?.source || !props.data?.translate || isQuestionAnswerLoading"
         @click="openQuestionAnswerModal"
@@ -241,7 +245,7 @@ const positionClasses = computed(() => {
       </button>
 
       <button
-        title="Лексический анализ"
+        :title="t('content.actions.lexicalAnalysis')"
         class="icon-button lexical-analysis-btn"
         :disabled="!props.data?.source || isLexicalAnalysisLoading"
         @click="handleLexicalAnalysis"
@@ -250,7 +254,7 @@ const positionClasses = computed(() => {
         <Icon v-else icon="mdi:text-box-search-outline" />
       </button>
       <button
-        title="Озвучить распознанный текст"
+        :title="t('content.actions.textToSpeech')"
         class="icon-button sound-btn"
         :disabled="!props.data?.source || isSoundLoading"
         @click="soundSource"
@@ -261,7 +265,7 @@ const positionClasses = computed(() => {
       <div class="menu-container">
         <button
           ref="menuButtonRef"
-          title="Настройки отображения"
+          :title="t('content.actions.displaySettings')"
           class="icon-button menu-btn"
           :class="{ active: isControlMenuOpen }"
           @click.stop="toggleControlMenu"
@@ -278,7 +282,7 @@ const positionClasses = computed(() => {
       </div>
       <button
         class="icon-button close-btn-action"
-        title="Закрыть (Esc)"
+        :title="t('content.close')"
         @click="closeComponent()"
       >
         <Icon icon="mdi:close" />
@@ -296,7 +300,7 @@ const positionClasses = computed(() => {
               :pinyin="props.data.transcription"
               :translate="props.data.translate"
             />
-            <span v-else>Не удалось распознать текст</span>
+            <span v-else>{{ t('content.unrecognizedText') }}</span>
           </div>
         </div>
       </div>
