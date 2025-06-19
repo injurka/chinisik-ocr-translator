@@ -61,14 +61,14 @@ export interface AbortRequestMessage extends BaseMessage {
 
 export type RuntimeMessage
   = | CaptureAreaMessage
-  | StartSelectionMessage
-  | ShowTranslationMessage
-  | ShowErrorMessage
-  | GetLexicalAnalysisMessage
-  | TextToSpeechMessage
-  | QuestionForAnswerMessage
-  | TranslateInlineTextMessage
-  | AbortRequestMessage
+    | StartSelectionMessage
+    | ShowTranslationMessage
+    | ShowErrorMessage
+    | GetLexicalAnalysisMessage
+    | TextToSpeechMessage
+    | QuestionForAnswerMessage
+    | TranslateInlineTextMessage
+    | AbortRequestMessage
 
 export type MessageSender = browser.Runtime.MessageSender
 
