@@ -99,6 +99,7 @@ function updateDisplayStyle(style: DisplayStyleValue) {
   min-width: 220px;
   background-color: var(--bg-secondary-color, #f7f7f7);
   border: 1px solid var(--border-secondary-color, #22263b1a);
+  border-radius: 12px;
 }
 
 .control-group {

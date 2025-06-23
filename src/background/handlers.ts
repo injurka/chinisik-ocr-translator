@@ -114,6 +114,8 @@ async function handleTranslateInlineText(request: TranslateInlineTextMessage) {
   }
 }
 
+// Utils
+
 async function handleAbortRequest(request: AbortRequestMessage) {
   request.keys.forEach((key) => {
     requestControllers[key].abort()

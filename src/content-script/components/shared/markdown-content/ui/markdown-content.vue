@@ -20,13 +20,13 @@ watch(
 </script>
 
 <template>
-  <div class="markdown-body" v-html="renderedContent" />
+  <div class="ocr-markdown-body" v-html="renderedContent" />
 </template>
 
 <style lang="scss">
-.markdown-body {
+.ocr-markdown-body {
   color: var(--fg-primary-color, #333);
-  font-family: var(--chinisik-base-font-family);
+  font-family: var(--ocr-chinisik-base-font-family);
   line-height: 1.5;
   font-size: 0.9375em;
 
@@ -66,7 +66,7 @@ watch(
   }
 
   code:not(pre > code) {
-    font-family: var(--chinisik-base-font-family);
+    font-family: var(--ocr-chinisik-base-font-family);
     background-color: var(--bg-secondary-color, #f7f7f7);
     color: var(--fg-primary-color, #333);
     padding: 0.15em 0.3em;
@@ -79,7 +79,7 @@ watch(
   pre {
     background: var(--bg-tertiary-color, #f3f3f3);
     color: var(--fg-primary-color, #333);
-    font-family: var(--chinisik-base-font-family);
+    font-family: var(--ocr-chinisik-base-font-family);
     padding: 0.8em;
     margin-top: 1em;
     margin-bottom: 1em;

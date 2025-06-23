@@ -300,7 +300,7 @@ const positionClasses = computed(() => {
               :pinyin="props.data.transcription"
               :translate="props.data.translate"
             />
-            <span v-else>{{ t('content.unrecognizedText') }}</span>
+            <span v-else class="empty">{{ t('content.unrecognizedText') }}</span>
           </div>
         </div>
       </div>
@@ -441,6 +441,7 @@ const positionClasses = computed(() => {
   border-color: var(--border-primary-color, #22263b);
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
 }
 
 .results-content {
@@ -477,6 +478,10 @@ const positionClasses = computed(() => {
     &.container {
       display: flex;
       flex-wrap: wrap;
+    }
+    .empty {
+      padding: 6px;
+      font-weight: 600;
     }
   }
 }

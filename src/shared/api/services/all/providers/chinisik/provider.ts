@@ -4,7 +4,7 @@ import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
 import { requestControllers } from '~/shared/api/request-controllers'
 import { LocalizedError } from '~/shared/utils/error'
-import { dataURLtoBlob } from '../../../../../utils/helpers'
+import { getOcrAndTranslatePrompt } from '~/shared/utils/prompt'
 import { CHINISIK_DEFAULT_API_URL } from './config'
 
 export class ChinisikProvider implements ITranslationProvider {
@@ -84,7 +84,7 @@ export class ChinisikProvider implements ITranslationProvider {
   /**
    * Внутренний метод для вызова raw LLM эндпоинта.
    */
-  private rawLlm<T>(config: ChinisikConfig, prompt: { user: string, system: string }, signal?: AbortSignal): Promise<T> {
+  private rawLlm<T>(config: ChinisikConfig, prompt: { user: unknown, system: unknown }, responseType?: 'text' | 'json_object', signal?: AbortSignal): Promise<T> {
     const { apiKey, apiUrl } = config
 
     return $fetch<T>(`${apiUrl}/llvm/raw`, {
@@ -93,7 +93,7 @@ export class ChinisikProvider implements ITranslationProvider {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: { ...prompt },
+      body: { ...prompt, responseType },
       signal,
     })
   }
@@ -106,22 +106,23 @@ export class ChinisikProvider implements ITranslationProvider {
       const config = this.getConfig(baseConfig)
       const { imageDataUrl, targetLanguage } = params
 
-      const blob = dataURLtoBlob(imageDataUrl)
-      const formData = new FormData()
-      formData.append('image', blob, 'screenshot.png')
-      formData.append('targetLanguage', targetLanguage)
-
-      const data = await $fetch<TranslationResult>(`${config.apiUrl}/llvm/image-to-text-translate`, {
-        method: 'POST',
-        headers: { Authorization: config.apiKey },
-        body: formData,
-        signal,
+      const { system, user } = getOcrAndTranslatePrompt({
+        user: { imageDataUrl },
+        targetLanguage,
       })
 
-      if (!data) {
+      const rawData = await this.rawLlm<string>(config, { system, user }, 'json_object', signal)
+
+      if (!rawData) {
         throw new LocalizedError('errors.api.noContent')
       }
-      return data
+
+      try {
+        return JSON.parse(rawData) as TranslationResult
+      }
+      catch {
+        throw new LocalizedError('errors.api.noContent')
+      }
     }, 'translate')
   }
 
@@ -131,7 +132,7 @@ export class ChinisikProvider implements ITranslationProvider {
   ): Promise<LexicalAnalysisResult> {
     return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
+      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, 'text', signal)
 
       if (!data) {
         throw new LocalizedError('errors.api.noContent')
@@ -178,7 +179,7 @@ export class ChinisikProvider implements ITranslationProvider {
   ): Promise<InlineTextTranslateResult> {
     return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, signal)
+      const data = await this.rawLlm<LexicalAnalysisResult>(config, params, 'text', signal)
 
       if (!data) {
         throw new LocalizedError('errors.api.noContent')
@@ -193,7 +194,7 @@ export class ChinisikProvider implements ITranslationProvider {
   ): Promise<QuestionForAnswerResult> {
     return this.requestWrapper(async (signal) => {
       const config = this.getConfig(baseConfig)
-      const data = await this.rawLlm<QuestionForAnswerResult>(config, params, signal)
+      const data = await this.rawLlm<QuestionForAnswerResult>(config, params, 'text', signal)
 
       if (!data) {
         throw new LocalizedError('errors.api.noContent')

@@ -332,7 +332,7 @@ onMounted(async () => {
   flex-direction: column;
   min-height: 600px;
   width: 380px;
-  font-family: var(--chinisik-base-font-family);
+  font-family: var(--ocr-chinisik-base-font-family);
   background-color: var(--bg-primary-color);
   color: var(--fg-primary-color, #333);
 }
@@ -562,7 +562,7 @@ kbd {
   border-radius: 3px;
   padding: 2px 5px;
   font-size: 0.85em;
-  font-family: var(--chinisik-base-font-family);
+  font-family: var(--ocr-chinisik-base-font-family);
   color: var(--fg-primary-color, #333);
 }
 .stats {

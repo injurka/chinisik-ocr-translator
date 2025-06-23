@@ -82,7 +82,7 @@ const positionClasses = computed(() => {
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    font-family: var(--chinisik-base-font-family);
+    font-family: var(--ocr-chinisik-base-font-family);
     color: var(--fg-primary-color, #333);
     overflow: hidden;
   }

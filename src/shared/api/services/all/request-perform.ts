@@ -48,12 +48,12 @@ export async function performTranslate(imageDataUrl: string): Promise<Translatio
   const targetLanguage = storageData.targetLanguage as Language
 
   const providerConfig = await getProviderSettings(currentProviderId)
-  const translator = getTranslationProvider(currentProviderId)
+  const providerInstance = getTranslationProvider(currentProviderId)
 
   const requestParams: TranslateRequestParams = { imageDataUrl, targetLanguage }
 
   try {
-    const result = await translator.translate(requestParams, providerConfig)
+    const result = await providerInstance.translate(requestParams, providerConfig)
     return result
   }
   catch (error) {
