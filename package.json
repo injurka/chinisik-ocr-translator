@@ -1,7 +1,7 @@
 {
   "name": "chinisik-ocr-translator",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Browser extension for OCR chinese translation ",
   "scripts": {
     "dev": "vite",
@@ -24,9 +24,11 @@
     "postinstall": "simple-git-hooks"
   },
   "dependencies": {
+    "@vueuse/core": "^13.4.0",
     "markdown-it": "^14.1.0",
     "markdown-it-attrs": "^4.3.1",
     "markdown-it-container": "^4.0.0",
+    "motion-v": "^1.3.0",
     "ofetch": "^1.4.1",
     "openai": "^5.7.0",
     "vue": "^3.5.17",

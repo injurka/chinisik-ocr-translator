@@ -192,6 +192,7 @@ function handleEscapeKey(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     if (isControlMenuOpen.value) {
       isControlMenuOpen.value = false
+      event.stopPropagation()
     }
     else {
       closeComponent()

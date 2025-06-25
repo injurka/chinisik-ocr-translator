@@ -24,8 +24,14 @@ interface TranslationResultData extends TranslationResult {
   croppedImage: string
 }
 
+interface HistoryItem extends TranslationResultData {
+  id: number
+  timestamp: string
+}
+
 export {
   AreaToCapture,
+  HistoryItem,
   Language,
   Theme,
   TranslationProvider,

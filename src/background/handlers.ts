@@ -1,6 +1,7 @@
-import type { AbortRequestMessage, CaptureAreaMessage, GetLexicalAnalysisMessage, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
+import type { AbortRequestMessage, CaptureAreaMessage, GetLexicalAnalysisMessage, HistoryItem, MessageSender, QuestionForAnswerMessage, ShowTranslationMessage, TextToSpeechMessage, TranslateInlineTextMessage } from '../shared/types'
 import browser from 'webextension-polyfill'
 import { requestControllers } from '~/shared/api/request-controllers'
+import { HISTORY_KEY, MAX_HISTORY_SIZE } from '~/shared/constant'
 import { LocalizedError } from '~/shared/utils/error'
 import {
   performInlineTextTranslate,
@@ -29,6 +30,21 @@ async function handleCaptureAndTranslate(request: CaptureAreaMessage, sender: Me
 
     const croppedImageDataUrl = await cropImage(imageDataUrl, area.x, area.y, area.width, area.height)
     const translation = await performTranslate(croppedImageDataUrl)
+
+    if (translation.source) {
+      const { [HISTORY_KEY]: history = [] as HistoryItem[] } = await browser.storage.local.get(HISTORY_KEY)
+
+      const newHistoryItem: HistoryItem = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        croppedImage: croppedImageDataUrl,
+        ...translation,
+      }
+
+      const updatedHistory = [newHistoryItem, ...history as HistoryItem[]].slice(0, MAX_HISTORY_SIZE)
+
+      await browser.storage.local.set({ [HISTORY_KEY]: updatedHistory })
+    }
 
     const translationMsg: ShowTranslationMessage = {
       action: 'showTranslation',
