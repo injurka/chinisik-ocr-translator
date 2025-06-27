@@ -68,7 +68,7 @@ export function useInlineTranslation(options: UseInlineTranslationOptions) {
       const selection = document.getSelection()
       if (!selection || selection.isCollapsed || selection.rangeCount === 0 || selection.toString().trim() === '') {
         if (isTooltipVisible.value && !hasValidSelection) {
-          // hideTooltip()
+          hideTooltip()
         }
         return
       }
@@ -112,7 +112,7 @@ export function useInlineTranslation(options: UseInlineTranslationOptions) {
     const selection = document.getSelection()
     if (!selection || selection.isCollapsed || selection.rangeCount === 0 || selection.toString().trim() === '') {
       if (isTooltipVisible.value && !hasValidSelection) {
-        // hideTooltip(); // Отложим это до handleDocumentClick
+        hideTooltip()
       }
       hasValidSelection = false
     }

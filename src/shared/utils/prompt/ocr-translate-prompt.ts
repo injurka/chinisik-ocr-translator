@@ -33,7 +33,7 @@ Return the result ONLY in a valid JSON object with the following exact structure
 {
   "source": "...",      // The recognized Chinese text from the image
   "translate": "...",   // The ${languageName} translation of the source text
-  "transcription": "..." // The Pinyin transcription of the source text (e.g., "nǐ hǎo shìjiè")
+  "transcription": "..." // The Pinyin transcription of the source text, using numbers for tones (1-4 for main tones, 5 for neutral). Example: "ni3 hao3 shi4jie4"
 }
 
 If no Chinese text is found in the image, return a JSON object with empty strings for all fields:

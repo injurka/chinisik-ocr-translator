@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import type { HieroglyphWordVariant } from '~/views/content-script/components/shared/hieroglyph-word'
+import type { PinyinDisplayMode } from '~/views/content-script/components/shared/pinyin-renderer'
+
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 
@@ -17,6 +19,8 @@ export type DisplayStyleValue = HieroglyphWordVariant
 export interface ControlValues {
   displayStyle: DisplayStyleValue
   displayPosition: DisplayPositionValue
+  pinyinDisplayMode: PinyinDisplayMode
+  pinyinColored: boolean
 }
 
 interface Props {
@@ -30,6 +34,14 @@ function updateDisplayPosition(position: DisplayPositionValue) {
 function updateDisplayStyle(style: DisplayStyleValue) {
   emit('update:modelValue', { ...props.modelValue, displayStyle: style })
 }
+
+function updatePinyinDisplayMode(mode: PinyinDisplayMode) {
+  emit('update:modelValue', { ...props.modelValue, pinyinDisplayMode: mode })
+}
+
+function togglePinyinColored() {
+  emit('update:modelValue', { ...props.modelValue, pinyinColored: !props.modelValue.pinyinColored })
+}
 </script>
 
 <template>
@@ -37,26 +49,57 @@ function updateDisplayStyle(style: DisplayStyleValue) {
     <div class="control-group">
       <label class="control-label">{{ t('content.controlMenu.displayStyle') }}</label>
       <div class="button-group">
+        <div class="segmented-control">
+          <button
+            :class="{ active: modelValue.displayStyle === 'compact' }"
+            :title="t('content.controlMenu.displayStyleCompact')"
+            @click="updateDisplayStyle('compact')"
+          >
+            <Icon icon="mdi:view-compact-outline" />
+          </button>
+          <button
+            :class="{ active: modelValue.displayStyle === 'standard' }"
+            :title="t('content.controlMenu.displayStyleStandard')"
+            @click="updateDisplayStyle('standard')"
+          >
+            <Icon icon="mdi:view-dashboard-outline" />
+          </button>
+          <button
+            :class="{ active: modelValue.displayStyle === 'expanded' }"
+            :title="t('content.controlMenu.displayStyleExpanded')"
+            @click="updateDisplayStyle('expanded')"
+          >
+            <Icon icon="mdi:view-sequential-outline" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">{{ t('content.controlMenu.pinyinDisplay') }}</label>
+      <div class="button-group">
+        <div class="segmented-control">
+          <button
+            :class="{ active: modelValue.pinyinDisplayMode === 'marks' }"
+            :title="t('content.controlMenu.pinyinDisplayMarks')"
+            @click="updatePinyinDisplayMode('marks')"
+          >
+            <Icon icon="mdi:format-letter-case" />
+          </button>
+          <button
+            :class="{ active: modelValue.pinyinDisplayMode === 'numbers' }"
+            :title="t('content.controlMenu.pinyinDisplayNumbers')"
+            @click="updatePinyinDisplayMode('numbers')"
+          >
+            <Icon icon="mdi:numeric" />
+          </button>
+        </div>
         <button
-          :class="{ active: modelValue.displayStyle === 'compact' }"
-          :title="t('content.controlMenu.displayStyleCompact')"
-          @click="updateDisplayStyle('compact')"
+          :class="{ active: modelValue.pinyinColored }"
+          :title="t('content.controlMenu.pinyinColored')"
+          @click="togglePinyinColored"
         >
-          <Icon icon="mdi:view-compact-outline" />
-        </button>
-        <button
-          :class="{ active: modelValue.displayStyle === 'standard' }"
-          :title="t('content.controlMenu.displayStyleStandard')"
-          @click="updateDisplayStyle('standard')"
-        >
-          <Icon icon="mdi:view-dashboard-outline" />
-        </button>
-        <button
-          :class="{ active: modelValue.displayStyle === 'expanded' }"
-          :title="t('content.controlMenu.displayStyleExpanded')"
-          @click="updateDisplayStyle('expanded')"
-        >
-          <Icon icon="mdi:view-sequential-outline" />
+          <Icon icon="mdi:palette-outline" />
         </button>
       </div>
     </div>
@@ -64,27 +107,29 @@ function updateDisplayStyle(style: DisplayStyleValue) {
     <div class="control-group">
       <label class="control-label">{{ t('content.controlMenu.position') }}</label>
       <div class="button-group">
-        <button
-          :class="{ active: modelValue.displayPosition === 'bottom-left' }"
-          :title="t('content.controlMenu.positionBottomLeft')"
-          @click="updateDisplayPosition('bottom-left')"
-        >
-          <Icon icon="mdi:dock-left" />
-        </button>
-        <button
-          :class="{ active: modelValue.displayPosition === 'center' }"
-          :title="t('content.controlMenu.positionCenter')"
-          @click="updateDisplayPosition('center')"
-        >
-          <Icon icon="mdi:dock-bottom" />
-        </button>
-        <button
-          :class="{ active: modelValue.displayPosition === 'bottom-right' }"
-          :title="t('content.controlMenu.positionBottomRight')"
-          @click="updateDisplayPosition('bottom-right')"
-        >
-          <Icon icon="mdi:dock-right" />
-        </button>
+        <div class="segmented-control">
+          <button
+            :class="{ active: modelValue.displayPosition === 'bottom-left' }"
+            :title="t('content.controlMenu.positionBottomLeft')"
+            @click="updateDisplayPosition('bottom-left')"
+          >
+            <Icon icon="mdi:dock-left" />
+          </button>
+          <button
+            :class="{ active: modelValue.displayPosition === 'center' }"
+            :title="t('content.controlMenu.positionCenter')"
+            @click="updateDisplayPosition('center')"
+          >
+            <Icon icon="mdi:dock-bottom" />
+          </button>
+          <button
+            :class="{ active: modelValue.displayPosition === 'bottom-right' }"
+            :title="t('content.controlMenu.positionBottomRight')"
+            @click="updateDisplayPosition('bottom-right')"
+          >
+            <Icon icon="mdi:dock-right" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -116,28 +161,29 @@ function updateDisplayStyle(style: DisplayStyleValue) {
 
 .button-group {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 
   button {
-    flex-grow: 1;
     padding: 6px 8px;
     background-color: var(--bg-tertiary-color, #f3f3f3);
     border: 1px solid var(--border-secondary-color, #ccc);
-    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--fg-primary-color, #333);
     font-size: 1.125em;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
 
     &:hover {
-      background-color: var(--bg-action-hover-color, #828dca);
+      background-color: var(--bg-action-hover-color, #e2e6ea);
     }
 
     &.active {
       background-color: var(--border-accent-color, #bbcef8);
-      color: var(--bg-primary-color, #fff);
+      color: var(--bg-primary-color, #333);
       border-color: var(--border-accent-color, #bbcef8);
     }
 
@@ -146,18 +192,34 @@ function updateDisplayStyle(style: DisplayStyleValue) {
       height: 1em;
     }
   }
+
+  > .toggle-button,
+  > button:not(:first-child) {
+    border-radius: 4px;
+    flex-grow: 1;
+  }
 }
 
-.control-item {
+.segmented-control {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9em;
+  flex-grow: 2;
 
-  label {
-    color: var(--fg-primary-color, #333);
-    cursor: pointer;
-    padding-right: 8px;
+  button {
+    flex-grow: 1;
+    border-radius: 0;
+
+    &:not(:last-child) {
+      border-right: none;
+    }
+
+    &:first-child {
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+    }
+    &:last-child {
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
   }
 }
 </style>

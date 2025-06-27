@@ -1,9 +1,9 @@
 import type { PropType, Ref } from 'vue'
-import type { PinyinTextProps } from '../../pinyin-text'
+import type { PinyinDisplayMode } from '../../pinyin-renderer'
 import type { HieroglyphWordVariant } from '../types'
 import { computed, defineComponent, ref, Teleport } from 'vue'
 import { useRender } from '~/shared/composables'
-import { PinyinText } from '../../pinyin-text'
+import { PinyinRenderer } from '../../pinyin-renderer'
 import { useInlineTranslation } from '../composables/use-inline-translation'
 import InlineTranslationTooltip from './inline-translation-tooltip.vue'
 
@@ -11,34 +11,37 @@ import './index.scss'
 
 const propsDefinition = {
   variant: { type: String as PropType<HieroglyphWordVariant> },
-  pinyin: { type: [Object, String] as PropType<PinyinTextProps | string> },
+  pinyin: { type: String },
   translate: { type: String },
   glyph: { type: String, required: true },
+  pinyinDisplayMode: {
+    type: String as PropType<PinyinDisplayMode>,
+    default: 'marks',
+  },
+  pinyinColored: {
+    type: Boolean,
+    default: true,
+  },
 }
-
 const HieroglyphWordVarious = defineComponent({
   name: 'WordVarious',
   props: propsDefinition,
-  components: { PinyinText },
+  components: { PinyinRenderer },
   setup(props) {
     const graphContent = computed(() => {
       return props.glyph
     })
 
     const pinyinContent = computed(() => {
-      const el = props.pinyin
-        && (
-          typeof props.pinyin === 'string'
-            ? props.pinyin
-            : (
-                <PinyinText
-                  pinyin={props.pinyin.pinyin}
-                  tone={props.pinyin.tone}
-                  colored={props.pinyin.colored}
-                />
-              )
-        )
-      return el && <span class="hw-pinyin">{el}</span>
+      return props.pinyin && (
+        <span class="hw-pinyin">
+          <PinyinRenderer
+            pinyin={props.pinyin}
+            displayMode={props.pinyinDisplayMode}
+            colored={props.pinyinColored}
+          />
+        </span>
+      )
     })
 
     const translateContent = computed(() => {
@@ -125,11 +128,8 @@ const HieroglyphWord = defineComponent({
         ]}
       >
         <HieroglyphWordVarious
-          variant={props.variant}
-          pinyin={props.pinyin}
-          translate={props.translate}
-          glyph={props.glyph}
-          key={variant.value}
+          {...props}
+          key={variant.value + props.pinyinColored + props.pinyinDisplayMode}
         />
 
         {isTooltipVisible.value && (

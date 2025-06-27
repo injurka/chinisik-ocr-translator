@@ -1,10 +1,8 @@
-import type { PinyinTextProps } from '../../pinyin-text'
-
 type HieroglyphWordVariant = 'compact' | 'expanded' | 'standard'
 
 interface IHieroglyphWordVariousProps {
   variant?: HieroglyphWordVariant
-  pinyin?: PinyinTextProps
+  pinyin?: string
   translate?: string
   glyph: string
 }

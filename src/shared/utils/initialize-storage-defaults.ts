@@ -27,6 +27,8 @@ export async function initializeStorageDefaults() {
     [STORAGE_KEY_CONTROLS]: {
       displayStyle: 'standard',
       displayPosition: 'center',
+      pinyinDisplayMode: 'marks',
+      pinyinColored: true,
     },
   }
 

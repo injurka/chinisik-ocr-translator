@@ -1,179 +1,55 @@
 <script lang="ts" setup>
 import type { ControlValues } from './sections/control-menu.vue'
-import type { LexicalAnalysisResult } from '~/shared/api/services/all/types/provider'
-import type { QuestionForAnswerMessage, TranslationResult as TranslationDataType } from '~/shared/types'
+import type { TranslationResult as TranslationDataType } from '~/shared/types'
 import { Icon } from '@iconify/vue'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import browser from 'webextension-polyfill'
-import { dataURLtoBlob } from '~/shared/utils/helpers'
-import { questionPrompt } from '~/shared/utils/prompt'
 import { HieroglyphWord } from '~/views/content-script/components/shared/hieroglyph-word'
+import { useTranslateFeatures } from '../composables/use-translate-features'
 import ControlMenu from './sections/control-menu.vue'
 import LexicalAnalysisModal from './sections/lexical-analysis-modal.vue'
 import QuestionAnswerModal from './sections/question-answer-modal.vue'
 
 const props = defineProps<Props>()
-
-const emit = defineEmits<{ close: [void], sound: [source: string] }>()
+const emit = defineEmits<{ close: [void] }>()
 
 const { t } = useI18n()
 
 interface Props {
   data: TranslationDataType
-  capturedImagePreview?: string | null
 }
 const controls = defineModel<ControlValues>('controls', {
   required: true,
 })
+
+// --- Логика фичей, вынесенная в хук ---
+const {
+  isLexicalAnalysisModalVisible,
+  lexicalAnalysisData,
+  isLexicalAnalysisLoading,
+  lexicalAnalysisError,
+  handleLexicalAnalysis,
+  isSoundLoading,
+  soundSource,
+  isQuestionAnswerModalVisible,
+  questionAnswerData,
+  isQuestionAnswerLoading,
+  questionAnswerError,
+  openQuestionAnswerModal,
+  handleSubmitQuestion,
+} = useTranslateFeatures(toRef(props, 'data'))
+
+// --- Логика, оставшаяся в компоненте (управление UI) ---
 const isControlMenuOpen = ref(false)
 const controlMenuRef = ref<HTMLElement | null>(null)
 const menuButtonRef = ref<HTMLElement | null>(null)
-
-// --- Состояние для лексического анализа ---
-const isLexicalAnalysisModalVisible = ref(false)
-const lexicalAnalysisData = ref<string | null>(null)
-const isLexicalAnalysisLoading = ref(false)
-const lexicalAnalysisError = ref<string | null>(null)
-// -----------------------------------------
-
-// --- Состояние для аудио ---
-const audioPlayer = ref<HTMLAudioElement | null>(null)
-const isSoundLoading = ref(false)
-const soundError = ref<string | null>(null)
-// -----------------------------------------
-
-// --- Состояние для вопросов и ответов ---
-const isQuestionAnswerModalVisible = ref(false)
-const questionAnswerData = ref<string | null>(null)
-const isQuestionAnswerLoading = ref(false)
-const questionAnswerError = ref<string | null>(null)
-// -----------------------------------------
 
 function closeComponent() {
   emit('close')
 }
 
-// --- Функции для модального окна вопросов и ответов ---
-function openQuestionAnswerModal() {
-  questionAnswerData.value = null
-  questionAnswerError.value = null
-  isQuestionAnswerModalVisible.value = true
-}
-
-async function handleSubmitQuestion(question: string) {
-  if (!props.data?.source || !props.data?.translate || isQuestionAnswerLoading.value)
-    return
-
-  isQuestionAnswerLoading.value = true
-  questionAnswerData.value = null
-  questionAnswerError.value = null
-
-  try {
-    const message: QuestionForAnswerMessage = {
-      action: 'questionForAnswer',
-      userPrompt: question,
-      systemPrompt: questionPrompt(props.data.source, props.data.translate),
-    }
-    const response: { data?: string, error?: string } = await browser.runtime.sendMessage(message)
-
-    if (response.error) {
-      throw new Error(response.error)
-    }
-    questionAnswerData.value = response.data || null
-  }
-  catch (error: any) {
-    console.error('Ошибка при запросе ответа на вопрос:', error)
-    questionAnswerError.value = error.message || t('content.qaRequestError')
-    questionAnswerData.value = null
-  }
-  finally {
-    isQuestionAnswerLoading.value = false
-  }
-}
-// ----------------------------------------------------
-
-async function soundSource() {
-  if (!props.data?.source || isSoundLoading.value) {
-    return
-  }
-  isSoundLoading.value = true
-  soundError.value = null
-  try {
-    const response: { audioDataUrl?: string, error?: string } | undefined = await browser.runtime.sendMessage({
-      action: 'textToSpeech',
-      text: props.data.source,
-    })
-
-    if (response && response.audioDataUrl) {
-      const audioDataUrl = response.audioDataUrl
-      const audioBlob = dataURLtoBlob(audioDataUrl)
-
-      if (audioPlayer.value) {
-        URL.revokeObjectURL(audioPlayer.value.src)
-      }
-      else {
-        audioPlayer.value = new Audio()
-      }
-      const objectUrl = URL.createObjectURL(audioBlob)
-
-      audioPlayer.value.src = objectUrl
-      audioPlayer.value.play()
-      audioPlayer.value.onended = () => {
-        URL.revokeObjectURL(objectUrl)
-      }
-      audioPlayer.value.onerror = (e) => {
-        console.error('Error playing audio:', e)
-        soundError.value = t('content.audioPlaybackError')
-        URL.revokeObjectURL(objectUrl)
-      }
-    }
-    else if (response && typeof response === 'object' && 'error' in response) {
-      console.error('Text-to-speech API error:', response.error)
-      soundError.value = response.error || t('content.speechSynthesisError')
-    }
-    else {
-      console.error('Failed to retrieve audio or invalid format received.')
-      soundError.value = t('content.audioFetchError')
-    }
-  }
-  catch (error: any) {
-    console.error('Error fetching or playing sound:', error)
-    soundError.value = error.message || t('content.qaRequestError')
-  }
-  finally {
-    isSoundLoading.value = false
-  }
-}
-
 function toggleControlMenu() {
   isControlMenuOpen.value = !isControlMenuOpen.value
-}
-
-async function handleLexicalAnalysis() {
-  if (!props.data?.source || isLexicalAnalysisLoading.value)
-    return
-
-  isLexicalAnalysisLoading.value = true
-  lexicalAnalysisData.value = null
-  lexicalAnalysisError.value = null
-
-  try {
-    const response: { data: LexicalAnalysisResult } = await browser.runtime.sendMessage({
-      action: 'getLexicalAnalysis',
-      sentence: props.data.source,
-    })
-    lexicalAnalysisData.value = response?.data || null
-    isLexicalAnalysisModalVisible.value = true
-  }
-  catch (error: any) {
-    console.error('Ошибка при запросе лексического анализа:', error)
-    lexicalAnalysisError.value = error.message || t('content.lexicalAnalysisError')
-    isLexicalAnalysisModalVisible.value = true
-  }
-  finally {
-    isLexicalAnalysisLoading.value = false
-  }
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -208,14 +84,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleEscapeKey)
-
-  if (audioPlayer.value) {
-    audioPlayer.value.pause()
-    if (audioPlayer.value.src && audioPlayer.value.src.startsWith('blob:')) {
-      URL.revokeObjectURL(audioPlayer.value.src)
-    }
-    audioPlayer.value = null
-  }
 })
 
 const positionClasses = computed(() => {
@@ -296,10 +164,12 @@ const positionClasses = computed(() => {
           <div class="text-content container">
             <HieroglyphWord
               v-if="props.data?.source"
-              :variant="controls.displayStyle"
               :glyph="props.data.source"
               :pinyin="props.data.transcription"
               :translate="props.data.translate"
+              :variant="controls.displayStyle"
+              :pinyin-display-mode="controls.pinyinDisplayMode"
+              :pinyin-colored="controls.pinyinColored"
             />
             <span v-else class="empty">{{ t('content.unrecognizedText') }}</span>
           </div>
@@ -326,6 +196,7 @@ const positionClasses = computed(() => {
 </template>
 
 <style lang="scss" scoped>
+/* Стили остаются без изменений */
 .translation-results {
   position: fixed;
   bottom: 20px;
@@ -340,6 +211,7 @@ const positionClasses = computed(() => {
   z-index: 9999;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
   max-width: calc(100vw - 40px);
+  gap: 8px;
 
   @media (max-width: 1200px) {
     width: 100%;
@@ -365,11 +237,11 @@ const positionClasses = computed(() => {
 
 .actions-bar {
   position: absolute;
+  align-items: flex-end;
   top: -42px;
-  right: 12px;
+  right: 0;
   display: flex;
   gap: 10px;
-  align-items: center;
   z-index: 101;
 
   .icon-button {
@@ -401,6 +273,12 @@ const positionClasses = computed(() => {
       cursor: not-allowed;
       background-color: var(--bg-tertiary-color, #f3f3f3);
       color: var(--fg-disabled-color, #999);
+    }
+
+    &.close-btn-action {
+      width: 38px;
+      height: 38px;
+      font-size: 1.2em;
     }
 
     &.menu-btn.active {

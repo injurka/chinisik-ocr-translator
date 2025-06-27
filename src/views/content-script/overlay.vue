@@ -23,6 +23,8 @@ const capturedImagePreview = ref<string | null>(null)
 const sharedControls = ref<ControlValues>({
   displayStyle: 'standard',
   displayPosition: 'center',
+  pinyinDisplayMode: 'marks',
+  pinyinColored: true,
 })
 
 async function loadControls() {
