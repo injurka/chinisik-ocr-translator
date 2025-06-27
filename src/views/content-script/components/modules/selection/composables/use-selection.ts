@@ -1,5 +1,5 @@
 import type { ModelRef } from 'vue'
-import type { AreaToCapture } from '../../../../../shared/types'
+import type { AreaToCapture } from '~/shared/types'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 export function useSelection(

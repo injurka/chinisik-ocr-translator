@@ -1,4 +1,4 @@
-@import '../assets/scss/_fonts.scss';
+@import '~/assets/scss/_fonts.scss';
 
 #chinisik-ocr-translator-overlay-root {
   font-size: var(--ocr-chinisik-base-font-size, 16px);
@@ -16,6 +16,7 @@
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   box-sizing: border-box;
+  scrollbar-width: none;
 
   *,
   *::before,
@@ -23,3 +24,7 @@
     box-sizing: border-box;
   }
 }
+
+/* body::-webkit-scrollbar {
+  display: none;
+} */

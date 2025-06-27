@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { HieroglyphWordVariant } from '~/content-script/components/shared/hieroglyph-word'
+import type { HieroglyphWordVariant } from '~/views/content-script/components/shared/hieroglyph-word'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 

@@ -1,9 +1,9 @@
 import type { Language } from '~/shared/types'
 import { createApp } from 'vue'
 import browser from 'webextension-polyfill'
-import i18n from '../i18n'
+import i18n from '~/i18n'
 import Popup from './popup.vue'
-import './styles.scss'
+import './styles.css'
 
 async function init() {
   const settings = await browser.storage.sync.get('targetLanguage')

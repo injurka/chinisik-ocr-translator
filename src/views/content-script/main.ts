@@ -1,8 +1,9 @@
 import type { Language } from '~/shared/types'
 import { createApp, h } from 'vue'
 import browser from 'webextension-polyfill'
-import i18n from '../i18n'
+import i18n from '~/i18n'
 import Overlay from './overlay.vue'
+import './styles.css'
 
 const MOUNT_EL_ID = 'chinisik-ocr-translator-overlay-root'
 

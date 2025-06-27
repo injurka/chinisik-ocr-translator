@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { AreaToCapture, Language, RuntimeMessage, Theme, TranslationResult } from '../shared/types'
 import type { ControlValues } from './components/modules/translate-result/ui/sections/control-menu.vue'
+import type { AreaToCapture, Language, RuntimeMessage, Theme, TranslationResult } from '~/shared/types'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import browser from 'webextension-polyfill'

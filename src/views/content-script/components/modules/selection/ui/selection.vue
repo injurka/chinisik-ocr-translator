@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { AreaToCapture } from '../../../../../shared/types'
+import type { AreaToCapture } from '~/shared/types'
 import { useSelection } from '../composables'
 import SelectionBox from './sections/selection-box.vue'
 import Tooltip from './sections/tooltip.vue'

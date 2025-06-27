@@ -11,10 +11,10 @@
     "128": "icon/128.png"
   },
   "{{chrome}}.action": {
-    "default_popup": "src/popup/index.html"
+    "default_popup": "src/views/popup/index.html"
   },
   "{{firefox}}.browser_action": {
-    "default_popup": "src/popup/index.html"
+    "default_popup": "src/views/popup/index.html"
   },
   "{{chrome}}.web_accessible_resources": [
     {
@@ -44,10 +44,7 @@
         "*://*/*"
       ],
       "js": [
-        "src/content-script/main.ts"
-      ],
-      "css": [
-        "src/content-script/styles.css"
+        "src/views/content-script/main.ts"
       ]
     }
   ],

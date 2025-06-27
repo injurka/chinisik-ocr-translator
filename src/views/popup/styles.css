@@ -1,15 +1,13 @@
-@import '../assets/scss/_fonts.scss';
-
-:root {
-  font-family: 'Rubik', 'MapleMono-CN', 'Noto Serif SC', sans-serif;
-}
+@import '~/assets/scss/_fonts.scss';
 
 html {
   padding: 0;
   margin: 0;
   height: 100%;
   border: none;
-  font-size: 16px;
+  font-size: var(--ocr-chinisik-base-font-size, 16px);
+  font-family: var(--ocr-chinisik-base-font-family);
+  color: var(--fg-primary-color);
 }
 
 body {
@@ -27,4 +25,12 @@ body {
   *::after {
     box-sizing: border-box;
   }
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scrollbar-width: none;
 }
