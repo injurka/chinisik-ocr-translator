@@ -1,6 +1,6 @@
 {
   "popup": {
-    "title": "🔍 Chinisik OCR Translator",
+    "title": "Chinisik OCR Translator",
     "loadingText": "Loading settings...",
     "languageLabel": "Translation language:",
     "inDevelopment": "⚙️ In Development",

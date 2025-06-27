@@ -1,5 +1,12 @@
+import type { ClassValue } from 'clsx'
 import type { CaptureAreaMessage } from '../types'
+import { clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 import { LocalizedError } from './error'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 async function cropImage(
   imageDataUrl: string,

@@ -1,0 +1,26 @@
+@import '../../assets/scss/_fonts.scss';
+@import '../../assets/css/main.css';
+
+#chinisik-ocr-translator-overlay-root {
+  font-size: var(--ocr-chinisik-base-font-size, 16px);
+  font-family: var(--ocr-chinisik-base-font-family);
+  color: var(--fg-primary-color);
+
+  padding: 0;
+  margin: 0;
+  border: none;
+
+  text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}

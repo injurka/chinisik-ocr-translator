@@ -8,4 +8,5 @@ export default antfu({
     '**/e2e-**/**',
     '**/bun.lock',
   ],
+
 })
