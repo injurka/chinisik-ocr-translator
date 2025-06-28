@@ -52,6 +52,8 @@ function onRequestTranslate() {
 <style lang="scss" scoped>
 .chinisik-inline-translation-tooltip {
   position: absolute;
+  align-items: center;
+  justify-content: center;
   background-color: var(--bg-primary-color, #fff);
   color: var(--fg-primary-color, #333);
   border: 1px solid var(--border-secondary-color, #ccc);
@@ -61,8 +63,8 @@ function onRequestTranslate() {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   z-index: 2147483647;
   transform: translateX(-50%) translateY(-100%);
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 24px;
+  min-height: 24px;
   text-align: center;
   transition: opacity 0.1s ease-in-out;
 

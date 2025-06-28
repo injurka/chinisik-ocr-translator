@@ -196,7 +196,6 @@ const positionClasses = computed(() => {
 </template>
 
 <style lang="scss" scoped>
-/* Стили остаются без изменений */
 .translation-results {
   position: fixed;
   bottom: 20px;
@@ -211,7 +210,7 @@ const positionClasses = computed(() => {
   z-index: 9999;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
   max-width: calc(100vw - 40px);
-  gap: 8px;
+  gap: 14px;
 
   @media (max-width: 1200px) {
     width: 100%;

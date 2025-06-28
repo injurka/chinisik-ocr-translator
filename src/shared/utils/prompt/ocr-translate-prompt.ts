@@ -23,34 +23,48 @@ export function getOcrAndTranslatePrompt(params: Payload) {
   const languageName = languageMap[params.targetLanguage] || 'Russian'
 
   const system = `
-You are an expert in Optical Character Recognition (OCR) for Chinese text, a professional Chinese-to-${languageName} translator, and a Pinyin transcriptionist.
+# ROLE
+You are a specialized AI assistant for Chinese language processing from images. Your sole function is to perform OCR, translation, and transcription, and return the result in a specific JSON format.
 
-Your task is to perform the following steps in sequence:
-1. Analyze the provided image and extract all Chinese text from it.
-2. Take the extracted Chinese text and provide its ${languageName} translation and its Pinyin transcription.
+# TASK
+Process the user-provided image by performing these three steps in order:
+1.  **OCR**: Accurately extract all Chinese characters (Hanzi) from the image.
+2.  **Translate**: Translate the extracted Chinese text into ${languageName}.
+3.  **Transcribe**: Provide a Pinyin transcription for the Chinese text. Use tone numbers (1-4, 5 for neutral) and separate each syllable with a single space.
 
-Return the result ONLY in a valid JSON object with the following exact structure:
+# OUTPUT REQUIREMENTS
+- You MUST return ONLY a single, raw, valid JSON object.
+- Do NOT wrap the JSON in markdown backticks (\`\`\`json ... \`\`\`).
+- Do NOT include any explanations, apologies, or conversational text.
+- The JSON object MUST have this exact structure:
 {
-  "source": "...",      // The recognized Chinese text from the image
-  "translate": "...",   // The ${languageName} translation of the source text
-  "transcription": "..." // The Pinyin transcription of the source text, using numbers for tones (1-4 for main tones, 5 for neutral). Example: "ni3 hao3 shi4jie4"
+  "source": "...",      // Extracted Chinese text (Hanzi)
+  "translate": "...",   // ${languageName} translation
+  "transcription": "..." // Pinyin with numeric tones (e.g., "ni3 hao3 shi4jie4")
 }
 
-If no Chinese text is found in the image, return a JSON object with empty strings for all fields:
+# EDGE CASES
+- If the image contains no discernible Chinese text, return the JSON object with all values as empty strings.
 {
   "source": "",
   "translate": "",
   "transcription": ""
 }
 
-Do not include any other explanations, greetings, or markdown. Just the JSON object.
-${params.system ?? ''}
+# EXAMPLE
+If the user provides an image containing the text "你好世界", your complete and exact output MUST be:
+{
+  "source": "你好世界",
+  "translate": "Привет, мир", // (Assuming target language is Russian)
+  "transcription": "ni3 hao3 shi4 jie4"
+}
+${params.system ? `\n# ADDITIONAL INSTRUCTIONS\n${params.system}` : ''}
   `
 
   const user = [
     {
       type: 'text',
-      text: `Analyze the image, extract the Chinese text, translate it to ${languageName}, and provide its Pinyin transcription. Return the result in the specified JSON format.`,
+      text: `Please process this image according to system instructions.`,
     },
     {
       type: 'image_url',

@@ -88,7 +88,7 @@ export function useInlineTranslation(options: UseInlineTranslationOptions) {
           const rect = range.getBoundingClientRect()
           tooltipPosition.top = rect.top + window.scrollY - TOOLTIP_OFFSET_Y
           tooltipPosition.left = rect.left + window.scrollX + rect.width / 2
-          tooltipPosition.display = 'block'
+          tooltipPosition.display = 'flex'
           hasValidSelection = true
           return
         }

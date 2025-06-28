@@ -1,142 +1,105 @@
-// Тип для отдельного слога после парсинга
-export interface PinyinSyllable {
-  syllable: string // Слог без тона, например, "ni"
-  tone: number // Номер тона (0-5)
-  original: string // Исходная часть строки, например "ni3" или "!"
+export interface PinyinSyllableParts {
+  pre: string
+  vowel: string
+  post: string
 }
 
-/**
- * Парсит строку пиньиня с цифрами в массив слогов.
- * @param pinyinString - Строка, например "ni3 hao3 ma5!"
- * @returns Массив объектов PinyinSyllable
- */
-export function parsePinyinString(pinyinString: string): PinyinSyllable[] {
-  if (!pinyinString)
-    return []
-
-  // Разделяем по пробелам, сохраняя их, чтобы потом восстановить
-  const parts = pinyinString.trim().split(/(\s+)/)
-
-  const result: PinyinSyllable[] = []
-
-  for (const part of parts) {
-    if (part.trim() === '') {
-      result.push({ syllable: part, tone: 0, original: part })
-      continue
-    }
-
-    const match = part.match(/^([a-zü]+)([1-5])?$/i)
-    if (match) {
-      const syllable = match[1]
-      const tone = match[2] ? Number.parseInt(match[2], 10) : 5 // Нейтральный тон по умолчанию
-      result.push({ syllable, tone, original: part })
-    }
-    else {
-      // Если это не слог пиньиня (например, знак препинания), сохраняем как есть
-      result.push({ syllable: part, tone: 0, original: part })
-    }
-  }
-  return result
+export type PinyinToken = {
+  type: 'pinyin'
+  original: string
+  syllable: string
+  tone: number
+  parts: PinyinSyllableParts
+} | {
+  type: 'text'
+  content: string
 }
 
-// Таблица для конвертации
-const toneMarks: Record<string, string[]> = {
+const TONE_MAP: Record<string, string[]> = {
   a: ['ā', 'á', 'ǎ', 'à', 'a'],
   e: ['ē', 'é', 'ě', 'è', 'e'],
   i: ['ī', 'í', 'ǐ', 'ì', 'i'],
   o: ['ō', 'ó', 'ǒ', 'ò', 'o'],
   u: ['ū', 'ú', 'ǔ', 'ù', 'u'],
   ü: ['ǖ', 'ǘ', 'ǚ', 'ǜ', 'ü'],
+  A: ['Ā', 'Á', 'Ǎ', 'À', 'A'],
+  E: ['Ē', 'É', 'Ě', 'È', 'E'],
+  I: ['Ī', 'Í', 'Ǐ', 'Ì', 'I'],
+  O: ['Ō', 'Ó', 'Ǒ', 'Ò', 'O'],
+  U: ['Ū', 'Ú', 'Ǔ', 'Ù', 'U'],
+  Ü: ['Ǖ', 'Ǘ', 'Ǚ', 'Ǜ', 'Ü'],
 }
 
 /**
- * Конвертирует слог с номером тона в слог с диакритическим знаком.
- * Реализует стандартные правила постановки знака тона.
- * @param syllable - Слог, например, "hao"
- * @param tone - Тон от 1 до 5
- * @returns Слог со знаком тона, например, "hǎo"
+ * Применяет знак тона к слогу пиньиня.
+ * @param syllable - Слог без тона, например "hao".
+ * @param tone - Номер тона (1-5).
+ * @returns Объект с разделенными частями слога.
  */
-export function convertToToneMark(syllable: string, tone: number): string {
-  if (tone < 1 || tone > 5)
-    return syllable
-  if (tone === 5)
-    return syllable // Нейтральный тон не имеет знака
+function applyToneMark(syllable: string, tone: number): PinyinSyllableParts {
+  let vowelToToneIndex = -1
 
-  const lowerSyllable = syllable.toLowerCase()
+  const aIndex = syllable.search(/a/i)
+  const eIndex = syllable.search(/e/i)
 
-  // Правило: 'a' и 'e' всегда получают тон. 'ou' получает на 'o'.
-  if (lowerSyllable.includes('a')) {
-    return syllable.replace(/a/i, toneMarks.a[tone - 1])
+  if (aIndex !== -1) {
+    vowelToToneIndex = aIndex
   }
-  if (lowerSyllable.includes('e')) {
-    return syllable.replace(/e/i, toneMarks.e[tone - 1])
+  else if (eIndex !== -1) {
+    vowelToToneIndex = eIndex
   }
-  if (lowerSyllable.includes('ou')) {
-    return syllable.replace(/o/i, toneMarks.o[tone - 1])
+  else if (syllable.includes('ou') || syllable.includes('OU')) {
+    vowelToToneIndex = syllable.search(/o/i)
   }
-
-  // Правило: для остальных тон ставится на последнюю гласную
-  for (let i = syllable.length - 1; i >= 0; i--) {
-    const char = syllable[i].toLowerCase()
-    if (toneMarks[char as keyof typeof toneMarks]) {
-      const replacement = toneMarks[char as keyof typeof toneMarks][tone - 1]
-      return syllable.substring(0, i) + replacement + syllable.substring(i + 1)
-    }
-  }
-
-  return syllable
-}
-
-// Все возможные гласные с диакритическими знаками
-const allToneMarks = new Set([
-  'ā',
-  'á',
-  'ǎ',
-  'à',
-  'ē',
-  'é',
-  'ě',
-  'è',
-  'ī',
-  'í',
-  'ǐ',
-  'ì',
-  'ō',
-  'ó',
-  'ǒ',
-  'ò',
-  'ū',
-  'ú',
-  'ǔ',
-  'ù',
-  'ǖ',
-  'ǘ',
-  'ǚ',
-  'ǜ',
-])
-
-interface SplitSyllable {
-  pre: string // Часть до тонированной гласной
-  vowel: string // Тонированная гласная
-  post: string // Часть после тонированной гласной
-}
-
-/**
- * Разделяет слог на части для последующей окраски тонированной гласной.
- * @param markedSyllable - Слог с диакритическим знаком, например "hǎo" или "chuāng"
- * @returns Объект с тремя частями слога.
- */
-export function splitSyllableByTonedVowel(markedSyllable: string): SplitSyllable {
-  for (let i = 0; i < markedSyllable.length; i++) {
-    const char = markedSyllable[i]
-    if (allToneMarks.has(char)) {
-      return {
-        pre: markedSyllable.substring(0, i),
-        vowel: char,
-        post: markedSyllable.substring(i + 1),
+  else {
+    // В остальных случаях - последняя гласная
+    for (let i = syllable.length - 1; i >= 0; i--) {
+      if ('aeiouvüAEIOUVÜ'.includes(syllable[i])) {
+        vowelToToneIndex = i
+        break
       }
     }
   }
 
-  return { pre: markedSyllable, vowel: '', post: '' }
+  if (vowelToToneIndex === -1) {
+    return { pre: '', vowel: syllable, post: '' }
+  }
+
+  const vowelChar = syllable[vowelToToneIndex]
+  const tonedVowel = TONE_MAP[vowelChar]?.[tone - 1] ?? vowelChar
+
+  return {
+    pre: syllable.substring(0, vowelToToneIndex),
+    vowel: tonedVowel,
+    post: syllable.substring(vowelToToneIndex + 1),
+  }
+}
+
+export function parsePinyin(pinyinString: string): PinyinToken[] {
+  if (!pinyinString)
+    return []
+
+  const regex = /([a-zü]+[1-5]?)/i
+  const parts = pinyinString.split(regex)
+  const pinyinSyllableRegex = /^[a-zü]+[1-5]?$/i
+
+  return parts
+    .filter(part => part.length > 0)
+    .map((part) => {
+      if (!pinyinSyllableRegex.test(part)) {
+        return { type: 'text', content: part }
+      }
+
+      const match = part.match(/([a-zü]+)([1-5])?/i)
+      const syllable = match![1]
+      const tone = match![2] ? Number.parseInt(match![2], 10) : 5
+
+      return {
+        type: 'pinyin',
+        original: part,
+        syllable,
+        tone,
+        parts: applyToneMark(syllable, tone),
+      }
+    })
 }
