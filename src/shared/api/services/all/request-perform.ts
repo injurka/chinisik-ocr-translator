@@ -1,9 +1,10 @@
 import type { Language, TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, CustomConfig, GeminiConfig } from './types/config'
 import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types/provider'
+import type { InlineVariantTranslate } from '~/shared/utils/prompt'
 import browser from 'webextension-polyfill'
 import { LocalizedError } from '~/shared/utils/error'
-import { lexicalAnalysisPrompt, translateMinimalPrompt } from '~/shared/utils/prompt'
+import { getInlineTranslate, lexicalAnalysisPrompt, translateMinimalPrompt } from '~/shared/utils/prompt'
 import { TranslationProvider } from '../../../types'
 import { CHINISIK_DEFAULT_API_URL } from './providers/chinisik/config'
 import { getTranslationProvider } from './utils/provider-factory'
@@ -138,16 +139,18 @@ export async function performTextToSpeechService(text: string): Promise<Blob> {
   }
 }
 
-export async function performInlineTextTranslate(text: string): Promise<InlineTextTranslateResult> {
-  const systemPrompt = translateMinimalPrompt()
-  const userPrompt = text
-
-  const { selectedProvider } = await browser.storage.sync.get({
+export async function performInlineTextTranslate(text: string, variant?: InlineVariantTranslate): Promise<InlineTextTranslateResult> {
+  const storageData = await browser.storage.sync.get({
     selectedProvider: TranslationProvider.Default,
+    targetLanguage: 'ru',
   })
-  const currentProviderId = selectedProvider as TranslationProvider
+
+  const targetLanguage = storageData.targetLanguage as Language
+  const currentProviderId = storageData.selectedProvider as TranslationProvider
   const providerConfig = await getProviderSettings(currentProviderId)
   const providerInstance = getTranslationProvider(currentProviderId)
+
+  const prompt = getInlineTranslate({ user: { word: text }, targetLanguage }, variant ?? 'minimal')
 
   if (!providerInstance.inlineTextTranslate) {
     throw new LocalizedError('errors.api.unsupportedFeature', { feature: 'Inline text translation', provider: currentProviderId })
@@ -155,10 +158,7 @@ export async function performInlineTextTranslate(text: string): Promise<InlineTe
 
   try {
     const result = await providerInstance.inlineTextTranslate(
-      {
-        user: userPrompt,
-        system: systemPrompt,
-      },
+      prompt,
       providerConfig,
     )
 

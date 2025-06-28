@@ -2,8 +2,8 @@ import type { BaseProviderConfig } from './config'
 import type { Language, TranslationResult } from '~/shared/types'
 
 export interface LlmPromptParams {
-  user: string
-  system: string
+  user: string | unknown
+  system: string | unknown
 }
 
 export type LexicalAnalysisRequestParams = LlmPromptParams
