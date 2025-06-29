@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { DisplayPositionValue } from '~/shared/translate-result/ui/sections/control-menu.vue'
+import type { DisplayPositionValue } from '../../translate-result/ui/sections/control-menu.vue'
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

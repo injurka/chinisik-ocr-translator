@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { PinyinToken } from '~/shared/lib/pinyin-parser'
+import type { PinyinToken } from '../lib/pinyin-parser'
 import { computed } from 'vue'
-import { parsePinyin } from '~/shared/lib/pinyin-parser'
+import { parsePinyin } from '../lib/pinyin-parser'
 
 export type PinyinDisplayMode = 'marks' | 'numbers'
 
