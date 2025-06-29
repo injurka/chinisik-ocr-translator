@@ -1,5 +1,5 @@
 import type { ITranslationProvider } from '../types/provider'
-import { TranslationProvider } from '../../../../types'
+import { TranslationProvider } from '~/shared/types'
 import { ChinisikProvider } from '../providers/chinisik/provider'
 import { CustomProvider } from '../providers/custom/provider'
 

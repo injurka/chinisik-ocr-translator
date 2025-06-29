@@ -1,5 +1,15 @@
 import type { BaseProviderConfig, ChinisikConfig } from '../../types/config'
-import type { InlineTextTranslateResult, ITranslationProvider, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TextToSpeechResult, TranslateRequestParams } from '../../types/provider'
+import type {
+  InlineTextTranslateResult,
+  ITranslationProvider,
+  LexicalAnalysisRequestParams,
+  LexicalAnalysisResult,
+  QuestionForAnswerRequestParams,
+  QuestionForAnswerResult,
+  TextToSpeechRequestParams,
+  TextToSpeechResult,
+  TranslateRequestParams,
+} from '../../types/provider'
 import type { TranslationResult } from '~/shared/types'
 import { $fetch, FetchError } from 'ofetch'
 import { requestControllers } from '~/shared/api/request-controllers'

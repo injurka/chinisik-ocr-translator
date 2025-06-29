@@ -2,7 +2,7 @@
 import { Icon } from '@iconify/vue'
 import { onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MarkdownContent } from '../../../../shared/markdown-content'
+import { MarkdownContent } from '~/shared/markdown-content'
 
 const props = defineProps<Props>()
 
@@ -162,6 +162,12 @@ onUnmounted(() => {
   flex-grow: 1;
   font-size: 0.95em;
 
+  scrollbar-width: none;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
   .loader-container {
     display: flex;
     flex-direction: column;
@@ -181,7 +187,7 @@ onUnmounted(() => {
     }
   }
 
-  :deep(.markdown-body) {
+  :deep(.ocr-markdown-body) {
     & > *:not(h2) {
       margin-inline: 18px;
     }

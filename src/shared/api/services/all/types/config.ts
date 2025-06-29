@@ -1,4 +1,4 @@
-import type { TranslationProvider } from '../../../../types'
+import type { TranslationProvider } from '~/shared/types'
 
 // Базовая конфигурация, общая для всех
 export interface BaseProviderConfig {

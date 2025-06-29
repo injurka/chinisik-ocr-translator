@@ -2,8 +2,8 @@
 import type { Language } from '~/shared/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useProviderSettings } from '../composables/provider-settings'
-import { getProviderDefinitions } from '../lib/provider-definitions'
+import { useProviderSettings } from '~/shared/composables/provider-settings'
+import { getProviderDefinitions } from '~/shared/lib/provider-definitions'
 import Instructions from './instructions.vue'
 import SettingsForm from './settings-form.vue'
 

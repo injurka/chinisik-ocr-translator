@@ -2,7 +2,7 @@
 import { Icon } from '@iconify/vue'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { MarkdownContent } from '../../../../shared/markdown-content'
+import { MarkdownContent } from '~/shared/shared/markdown-content'
 
 const props = defineProps<Props>()
 

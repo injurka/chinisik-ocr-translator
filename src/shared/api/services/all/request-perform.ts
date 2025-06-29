@@ -1,10 +1,10 @@
-import type { Language, TranslationResult } from '../../../types'
 import type { AllProviderConfigs, BaseProviderConfig, ChinisikConfig, CustomConfig, GeminiConfig } from './types/config'
 import type { InlineTextTranslateResult, LexicalAnalysisRequestParams, LexicalAnalysisResult, QuestionForAnswerRequestParams, QuestionForAnswerResult, TextToSpeechRequestParams, TranslateRequestParams } from './types/provider'
+import type { Language, TranslationResult } from '~/shared/types'
 import browser from 'webextension-polyfill'
+import { TranslationProvider } from '~/shared/types'
 import { LocalizedError } from '~/shared/utils/error'
 import { lexicalAnalysisPrompt, translateMinimalPrompt } from '~/shared/utils/prompt'
-import { TranslationProvider } from '../../../types'
 import { CHINISIK_DEFAULT_API_URL } from './providers/chinisik/config'
 import { getTranslationProvider } from './utils/provider-factory'
 

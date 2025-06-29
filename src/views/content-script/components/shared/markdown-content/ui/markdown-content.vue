@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { createMarkdownRenderer } from '../lib'
+import { createMarkdownRenderer } from '~/shared/lib'
 
 interface Props {
   content: string
