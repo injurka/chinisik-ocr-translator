@@ -15,15 +15,14 @@ export class CustomProvider implements ITranslationProvider {
   /**
    * Создает и конфигурирует экземпляр клиента OpenAI.
    */
-  private createOpenAIClient(config: CustomConfig, signal: AbortSignal): OpenAI {
+  private createOpenAIClient(config: CustomConfig): OpenAI {
     if (!config.apiUrl || !config.model)
       throw new LocalizedError('errors.api.customProviderConfig')
 
     return new OpenAI({
       apiKey: config.apiKey,
       baseURL: config.apiUrl,
-      // @ts-expect-error - AbortSignal types might not align perfectly, but it works
-      signal,
+      dangerouslyAllowBrowser: true,
     })
   }
 
@@ -31,19 +30,19 @@ export class CustomProvider implements ITranslationProvider {
    * Обертка для выполнения запросов с AbortController.
    */
   private async requestWrapper<T>(
-    requestFn: (openai: OpenAI, model: string) => Promise<T>,
+    requestFn: (openai: OpenAI, model: string, signal: AbortSignal) => Promise<T>,
     baseConfig: BaseProviderConfig,
     key: keyof ITranslationProvider,
   ): Promise<T> {
     const config = baseConfig as CustomConfig
     // Сбрасываем предыдущий запрос, если он был
-    requestControllers[key].abort()
+    requestControllers[key]?.abort()
     const newController = new AbortController()
     requestControllers[key] = newController
 
     try {
-      const openai = this.createOpenAIClient(config, newController.signal)
-      return await requestFn(openai, config.model)
+      const openai = this.createOpenAIClient(config)
+      return await requestFn(openai, config.model, newController.signal)
     }
     catch (error) {
       if (newController.signal.aborted) {
@@ -59,7 +58,7 @@ export class CustomProvider implements ITranslationProvider {
   }
 
   public translate(params: TranslateRequestParams, baseConfig: BaseProviderConfig): Promise<TranslationResult> {
-    return this.requestWrapper(async (openai, model) => {
+    return this.requestWrapper(async (openai, model, signal) => {
       const { imageDataUrl, targetLanguage } = params
 
       // 1. Генерируем промпты с помощью новой функции
@@ -77,6 +76,8 @@ export class CustomProvider implements ITranslationProvider {
         ],
         max_tokens: 1024,
         response_format: { type: 'json_object' },
+      }, {
+        signal,
       })
 
       const content = response.choices[0].message.content
@@ -88,7 +89,7 @@ export class CustomProvider implements ITranslationProvider {
   }
 
   private performLlmRequest(params: LlmPromptParams, baseConfig: BaseProviderConfig, key: keyof ITranslationProvider): Promise<string> {
-    return this.requestWrapper(async (openai, model) => {
+    return this.requestWrapper(async (openai, model, signal) => {
       const response = await openai.chat.completions.create({
         model,
         messages: [
@@ -96,6 +97,8 @@ export class CustomProvider implements ITranslationProvider {
           { role: 'user', content: params.user },
         ],
         temperature: 0.3,
+      }, {
+        signal,
       })
       const content = response.choices[0].message.content
       if (!content)
@@ -118,7 +121,7 @@ export class CustomProvider implements ITranslationProvider {
   }
 
   public textToSpeech(params: TextToSpeechRequestParams, baseConfig: BaseProviderConfig): Promise<Blob> {
-    return this.requestWrapper(async (openai) => {
+    return this.requestWrapper(async (openai, _, signal) => {
       const config = baseConfig as CustomConfig
 
       const modelForTts = params.model // 1. Из параметров вызова
@@ -131,6 +134,8 @@ export class CustomProvider implements ITranslationProvider {
         voice: params.voice || 'alloy',
         response_format: params.response_format || 'mp3',
         speed: params.speed || 1.0,
+      }, {
+        signal,
       })
       return response.blob()
     }, baseConfig, 'textToSpeech')
